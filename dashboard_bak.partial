@@ -1,0 +1,201 @@
+<style>
+#dropzone {
+  border: 2px dashed #bbb;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font: 20pt bold;
+  color: #bbb;
+  margin-bottom: 20px;
+}
+table { border-collapse: collapse; }
+.percent {
+  position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
+}
+.progress-bar {
+  width: 300px; height: 14px;
+  border-radius: 10px;
+  border: 1px solid #CCC;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
+  border-image: initial;
+}
+.uploaded {
+  padding: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+  border-image: initial;
+}
+.dropbox {
+  border: 2px dashed #bbb;
+  border-radius: 5px;
+  text-align: center;
+  font: 20pt bold;
+  color: #bbb;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+.dropbox span {
+  margin-top: 0.9em;
+  display: block;
+}
+.dropbox.not-available {
+  background-color: #e67e22;
+}
+.dropbox.over {
+  background-color: #bdc3c7;
+}
+.dropbox.over span {
+  color: white;
+}
+.fileBlock {
+  position: aboslute;
+  bottom: 0;
+}
+#uploadButton {
+  margin-top: 20px;
+}
+#drop_grid ul{
+  bottom: 26px;
+  left: 0;
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: 27px;
+  margin-bottom: 60px;
+}
+#drop_grid li{
+  width: 150px;
+  float: left;
+  background-color: #fff;
+  margin:15px;
+}
+#drop_grid li img{
+  margin: 5px 0px 0px 5px;
+}
+#drop_grid li p{
+  white-space: nowrap;
+  margin: 5px;
+  overflow: hidden;
+}
+</style>
+<div ng-controller='DashBoardController'>
+  <!-- 左侧column -->
+  <div class="large-2 columns row">
+
+    <!-- 群组、我的文件，导航栏 -->
+    <div id="navBlock">
+      <ul class="side-nav">
+        <li class="active">
+          <a href='./0'>My Files</a>
+        </li>
+        <li class="divider">
+        <li><a>SampleGroup</a></li>
+      </ul>
+    </div>
+
+
+    <hr>
+    <!-- 传文件的部分 -->
+    <div class="fileBlock">
+
+      <!-- 按钮选择文件 -->
+      <div class="row" ng-hide='true'>
+        <label id='uplabel' for="fileToUpload">上传文件</label><br/>
+        <input type="file" ng-model-instant id="fileToUpload" multiple onchange="angular.element(this).scope().setFiles(this)"/>
+      </div>
+      <!-- end -->
+
+      <!-- 丢文件的框框 -->
+      <div id="dropbox" class="dropbox" ng-class="dropClass" ng-click='fileToUpload'>
+        <span>{{dropText}}</span>
+      </div>
+      <!-- end -->
+
+      <!-- 展示需要上传的文件 -->
+      <div ng-show="files.length">
+
+        <div ng-repeat="file in files.slice(0)">
+          <span>{{file.webkitRelativePath || file.name}}</span>
+          (<span ng-switch="file.size > 1024*1024">
+            <span ng-switch-when="true">{{file.size / 1024 / 1024 | number:2}} MB</span>
+            <span ng-switch-default>{{file.size / 1024 | number:2}} KB</span>
+            </span>)
+        </div>
+
+        <input type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/>
+
+        <div ng-show="progressVisible">
+          <div class="percent">
+            {{progress}}%
+          </div>
+          <div class="progress-bar">
+            <div class="uploaded" ng-style="{'width': progress+'%'}"></div>
+          </div>
+        </div>
+      </div>
+      <!-- end -->
+
+    </div>
+    <!-- end of fileBlock -->
+  </div>
+  <!-- 左侧column结束 -->
+  
+
+
+  <!-- 右侧column -->
+  <div class="large-10 columns" id="contentBlock" >
+    <table class="friend">
+      <p>当前目录共有文件/文件夹：{{current_dir_content.length}}</p>
+      <input type='text' ng-model='new_dir_name'/>
+      <button class='small secondary button' ng-click="createDir()">创建文件夹</button>
+      <tr>
+        <th><a href="" ng-click="predicate = 'type'; reverse=false ">type</a>
+            (<a href="" ng-click="predicate = '-type'; reverse=false"> ^ </a>)</th>
+        <th><a href="" ng-click="predicate = 'id'; reverse=!reverse ">ID</a></th>
+        <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name</a>
+        <th><a href="" ng-click="predicate = 'bucket'; reverse=!reverse">Bucket</a></th>
+        <th><a href="" ng-click="predicate = 'created_at'; reverse=!reverse">创建时间</a></th>
+        <th><a href="" ng-click="predicate = 'updated_at'; reverse=!reverse">最后修改时间</a></th>
+        <th><a href="" ng-click="predicate = 'status'; reverse=!reverse">Status</a></th>
+      </tr>
+      <tr ng-repeat="file in current_dir_content | orderBy:predicate:reverse" class='dropItems'>
+        <td>{{file.type}}</td>
+        <td>{{file.id}}</td>
+        <td ng-switch="file.type === 'dir'" >
+          <a ng-switch-default data-version_of='{{file.id}}'
+            href=http://localhost:3000/a/Build/f/{{file.id}}>
+            {{file.name}}</a>
+          <a ng-switch-when="true" data-dir_id='{{file.id}}'
+            href={{current_url_without_dir_id}}/{{file.id}}>
+            {{file.name}}</a>
+        </td>
+        <td>{{file.bucket}}</td>
+        <td>{{file.created_at}}</td>
+        <td>{{file.updated_at}}</td>
+        <td>{{file.status}}</td>
+      </tr>
+    </table>
+
+    <div id="drop_grid">
+      <ul>
+        <li ng-repeat="file in current_dir_content | orderBy:predicate:reverse">
+          <p ng-switch="file.type === 'dir'">
+            <a ng-switch-default data-version_of='{{file.id}}'
+            href=http://localhost:3000/a/Build/f/{{file.id}}
+            target="_blank">
+            {{file.name}}</a><br>
+            <a ng-switch-when="true" data-dir_id='{{file.id}}'
+            href={{current_url_without_dir_id}}/{{file.id}}>
+            {{file.name}}</a><br>
+            {{file.created_at}}<br>
+            {{file.updated_at}}<br>
+          </p>
+        </li>
+      </ul>
+    </div>
+
+
+
+  </div>
+</div>

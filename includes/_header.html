@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--[if lte IE 8]>
+  <script>
+    document.createElement('ng-include');
+    document.createElement('ng-pluralize');
+    document.createElement('ng-view');
+
+    // Optionally these for CSS
+    document.createElement('ng:include');
+    document.createElement('ng:pluralize');
+    document.createElement('ng:view');
+  </script>
+<![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <!-- @stylesheet css/foundation -->
+  <!-- @stylesheet foundation -->
+
+
+  <!-- @javascript vendor/custom.modernizr -->
+  <!-- @javascript foundation.min -->
+  <!-- @javascript angular.min -->
+  <!-- @javascript angular-cookies.min -->
+  <!-- @javascript angular-route.min -->
+  <!-- @javascript index -->
+  <!-- @reload -->
+  
+  <link href="<!-- @path favicon.ico -->" rel="shortcut icon">
+  <link href="<!-- @path apple-touch-icon.png -->" rel="apple-touch-icon">
+  
+  <title>upCloud</title>
+  
+</head>
+
+<body ng-app='upCloud'>
+
+  <header>
+    <!-- @include _nav -->
+  </header>
+
+  <!-- 插入angular模版 -->
+  <ng-view></ng-view>
+
+
+  <!-- @include _footer -->

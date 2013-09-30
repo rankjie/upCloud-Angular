@@ -1,0 +1,128 @@
+<header>
+  <!-- @include _nav -->
+</header>
+<div ng-controller='DashBoardController' id='DashBoard'>
+  <!-- 左侧column -->
+  <div class="large-2 columns row" id='LeftBlock'>
+
+    <!-- 群组、我的文件，导航栏 -->
+    <div id="navBlock">
+      <ul class="side-nav">
+        <li>
+          <a href='/a/Build/dashboard'><i class="icon-user"></i>  My Files</a>
+        </li>
+        <li class="divider">
+        <li ng-repeat="group in groups" ng-class="group.liclass">
+          <a class='GroupItem' href=/a/Build/dashboard/group/{{group.id}}/0>
+            <i class="icon-group"></i>  
+            {{group.name}}
+          </a>
+          <i class="icon-remove {{group.type}}"></i>
+          <br>
+        </li>
+        <li style="margin-top:20px">
+<!--           <i class="icon-plus"></i>  创建群组 -->
+          <form>
+          <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_name' onkeydown="if (event.keyCode == 13) $('#createGroupButton').click()"
+          placeholder='创建群组...'/>
+          <input ng-hide='true' id="createGroupButton" type='submit' class='small secondary button' ng-click="createGroup()" value='创建群组'/></span>
+        </form>
+        </li>
+      </ul>
+    </div>
+
+
+<!--     <hr> -->
+    <!-- 传文件的部分 -->
+    <div class="fileBlock" >
+
+      <!-- 按钮选择文件 -->
+      <div class="row show-for-small" style="text-align: center;">
+        <label id='uplabel' class="small button" for="fileToUpload">上传文件</label><br/>
+        <input ng-hide='true' type="file" ng-model-instant id="fileToUpload" multiple onchange="angular.element(this).scope().setFiles(this)"/>
+      </div>
+      <!-- end -->
+
+      <!-- 丢文件的框框 -->
+      <div id="dropbox" class="dropbox hide-for-small" ng-class="dropClass" onclick="$('#uplabel').click()">
+<!--         <span>{{dropText}}</span> -->
+        <i class="icon-cloud-upload" id='upicon'></i>
+      </div>
+      <!-- end -->
+
+      <!-- 展示需要上传的文件 -->
+      <div ng-show="files.length">
+        <div ng-repeat="file in files.slice(0)">
+          <span>{{file.webkitRelativePath || file.name}}</span>
+          (<span ng-switch="file.size > 1024*1024">
+            <span ng-switch-when="true">{{file.size / 1024 / 1024 | number:2}} MB</span>
+            <span ng-switch-default>{{file.size / 1024 | number:2}} KB</span>
+            </span>)
+        </div>
+
+        <input type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/>
+
+        <div ng-show="progressVisible">
+          <div class="percent">
+            {{progress}}%
+          </div>
+          <div class="progress-bar">
+            <div class="uploaded" ng-style="{'width': progress+'%'}"></div>
+          </div>
+        </div>
+      </div>
+      <!-- end -->
+
+    </div>
+    <!-- end of fileBlock -->
+    
+  </div>
+  <!-- 左侧column结束 -->
+  
+
+
+  <!-- 右侧column -->
+  <div class="large-10 columns" id="contentBlock" >
+    <div id="ControlButtonBlock">
+      <div id='NewDirBlock' style="display:inline-block;" >
+        <form>
+          <!--         当前目录共有文件/文件夹：{{current_dir_content.length}} -->
+          <span><input style="width:150px; display:inline-block;" type='text' ng-model='new_dir_name' onkeydown="if (event.keyCode == 13) $('#createDirButton').click()" placeholder='new directory..'/>
+          <input ng-hide='true' id="createDirButton" type='submit' class='small secondary button' ng-click="createDir()" value='创建文件夹'/></span>
+        </form>
+      </div>
+      <div id="SortButtonBlock" style="display:inline-block">
+        <p>
+          <a class="small secondary button" href="" ng-click="predicate = 'type'; reverse=false ">目录在前</a>
+          <a class="small secondary button" href="" ng-click="predicate = '-type'; reverse=false">文件在前</a>
+          <a class="small secondary button" href="" ng-click="predicate = 'name'; reverse=!reverse">档案名</a>
+          <a class="small secondary button" href="" ng-click="predicate = 'bucket'; reverse=!reverse">文件类型</a>
+          <a class="small secondary button" href="" ng-click="predicate = 'updated_at'; reverse=!reverse">修改时间</a>
+        </p>
+      </div>
+    </div>
+  
+    <div ng-repeat="file in current_dir_content | orderBy:predicate:reverse" class='item' ng-switch="file.type === 'dir'" id="item_{{file.id}}">
+      
+      <div  class="DeleteButtonBlock">
+         <i class="icon-remove ItemButton" ng-click="deleteItem(file)"></i><br>
+         <i class="icon-edit ItemButton" ng-click="editItem(file)"></i>
+      </div>
+      
+      <a ng-switch-default data-version_of='{{file.id}}'
+          href=http://localhost:3000/a/Build/f/{{file.id}}>
+          <img src="{{file.previewPic}}">
+          <br>
+          {{file.name}}</a>
+      <a ng-switch-when="true" data-dir_id='{{file.id}}'
+          href={{current_url_without_dir_id}}/{{file.id}}>
+          <img src="{{file.previewPic}}">
+          <br>
+          {{file.name}}</a>
+      <br>
+      <small class="subheader">{{file.updated_at}}</small>
+    </div>
+    
+  </div>
+
+</div>
