@@ -1,4 +1,4 @@
-<nav class="top-bar" ng-controller='navController'>
+<nav class="top-bar" ng-controller='navController' ng-init='isLogin = false'>
   <ul class="title-area">
     <!-- Title Area -->
     <li class="name">
@@ -13,11 +13,12 @@
 
     <!-- Right Nav Section -->
     <ul class="right">
-      <li class="has-form" >
-        <a class="button secondary" ng-click="logOut()">登出</a>
+      <li class="has-form" ng-show="isLogin">
+        <a ng-click="logOut()">Log Out</a>
       </li>
+      <li class="divider"></li>
       <li class="has-form">
-        <a class="button secondary" href="mailto:leijie.hou@upai.com">Report Bug</a>
+        <a href="mailto:leijie.hou@upai.com">Report Bug</a>
       </li>
     </ul>
   </section>

@@ -1,6 +1,8 @@
+#encoding: utf-8
+
 baseURL = 'http://localhost:3000'
 
-tempURL = ""
+tempURL = "/a/Build"
 
 indexURL = tempURL+'/'
 homeURL = tempURL+'/home'
@@ -17,41 +19,12 @@ Controllers = {}
 Directives  = {}
 
 
-
-
-upCloud.config(['$httpProvider', ($httpProvider) ->
-  $httpProvider.defaults.withCredentials = true;
-])
-
-
-
-
-
-
-
-                   ######  ######## ########  ##     ## ####  ######  ########                 
-                  ##    ## ##       ##     ## ##     ##  ##  ##    ## ##                       
-                  ##       ##       ##     ## ##     ##  ##  ##       ##                       
-  ####### #######  ######  ######   ########  ##     ##  ##  ##       ######   ####### ####### 
-                        ## ##       ##   ##    ##   ##   ##  ##       ##                       
-                  ##    ## ##       ##    ##    ## ##    ##  ##    ## ##                       
-                   ######  ######## ##     ##    ###    ####  ######  ########                 
-
-
 upCloud.service 'myData', ()->
   class DataStore
     constructor: () ->
   myDataStore = new DataStore
   return myDataStore
 
-
-                  ########  #### ########  ########  ######  ######## #### ##     ## ########                 
-                  ##     ##  ##  ##     ## ##       ##    ##    ##     ##  ##     ## ##                       
-                  ##     ##  ##  ##     ## ##       ##          ##     ##  ##     ## ##                       
-  ####### ####### ##     ##  ##  ########  ######   ##          ##     ##  ##     ## ######   ####### ####### 
-                  ##     ##  ##  ##   ##   ##       ##          ##     ##   ##   ##  ##                       
-                  ##     ##  ##  ##    ##  ##       ##    ##    ##     ##    ## ##   ##                       
-                  ########  #### ##     ## ########  ######     ##    ####    ###    ########                 
 
 Directives['filelistBind'] = ($http)->
   (scope, elm, attrs) ->
@@ -74,15 +47,6 @@ Directives['filelistBind'] = ($http)->
 upCloud.directive Directives
 
 
-
-                   ######   #######  ##    ## ######## ########   #######  ##       ##       ######## ########                  
-                  ##    ## ##     ## ###   ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##                 
-                  ##       ##     ## ####  ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##                 
-  ####### ####### ##       ##     ## ## ## ##    ##    ########  ##     ## ##       ##       ######   ########  ####### ####### 
-                  ##       ##     ## ##  ####    ##    ##   ##   ##     ## ##       ##       ##       ##   ##                   
-                  ##    ## ##     ## ##   ###    ##    ##    ##  ##     ## ##       ##       ##       ##    ##                  
-                   ######   #######  ##    ##    ##    ##     ##  #######  ######## ######## ######## ##     ##                 
-
 isPic = (file)->
   link = file.uri or file.link or file.name
   if link.toLowerCase().split('.').pop() in ['jpg', 'png', 'gif', 'bmp', 'raw', 'jpeg', 'webp', 'ppm', 'pgm', 'pbm', 'pnm', 'pfm', 'pam', 'tiff', 'exif']
@@ -90,19 +54,14 @@ isPic = (file)->
   else 
     return false
 
-# 检查是否登录（看返回的user_id
 isLogin = ($http, myData)->
   deferred = Q.defer()
   $http.get(baseURL+'/api/users/current')
   .success (res)->
-    console.log 'check login...'
-    console.log res
     if res.user_id is 0
-      console.log 'not logged in...'
       delete(myData.user_id)
       deferred.resolve false
     else
-      console.log 'logged in!!!'
       myData.user_id = res.user_id
       deferred.resolve true
   .error (err)->
@@ -112,7 +71,7 @@ isLogin = ($http, myData)->
 
 
 Controllers['navController'] = ($scope, $http, $location, myData)->
-  # 登出按钮
+
   $scope.logOut = ()->
     $http.delete(baseURL+'/api/session')
     .success (res)->
@@ -159,7 +118,7 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
     goDashBoard = (user_id)->
       $location.path(dashboardURL+ '/' + user_id + '/0' )
     myData.user_email = $scope.email
-    # 注册
+
     if $scope.pwd_repeat?
       $http.post(baseURL+'/api/users', {
         email: $scope.email
@@ -170,7 +129,7 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
       .error (err)->
         console.log err
         alert err
-    # 登录
+
     else
       $http.post(baseURL+'/api/session', {
         email: $scope.email
@@ -183,25 +142,13 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
         alert err
 
 
-
-  ########     ###     ######  ##     ## ########   #######     ###    ########  ########  
-  ##     ##   ## ##   ##    ## ##     ## ##     ## ##     ##   ## ##   ##     ## ##     ## 
-  ##     ##  ##   ##  ##       ##     ## ##     ## ##     ##  ##   ##  ##     ## ##     ## 
-  ##     ## ##     ##  ######  ######### ########  ##     ## ##     ## ########  ##     ## 
-  ##     ## #########       ## ##     ## ##     ## ##     ## ######### ##   ##   ##     ## 
-  ##     ## ##     ## ##    ## ##     ## ##     ## ##     ## ##     ## ##    ##  ##     ## 
-  ########  ##     ##  ######  ##     ## ########   #######  ##     ## ##     ## ########  
-
 Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routeParams)->
 
-  # 检查是否登录（看返回的user_id）
-  # 没登录的跳转到首页，登录的跳转到自己的页面
+
   isLogin($http, myData)
   .then (logged_in)->
     console.log logged_in
     if logged_in
-      # 如果有user_id就说明是在用户文件页面，所以要跳转到用户本身的页面
-      # 没有user_id就说明是在请求小组的文件，就不用检查了
       if $routeParams.user_id? and myData.user_id.toString() isnt $routeParams.user_id.toString()
         console.log 'redirect to your own dashboard... '
         $location.path(dashboardURL+ '/' + myData.user_id + '/0')
@@ -225,19 +172,19 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     d = new Date(raw_date)
     return d.getFullYear() + " " + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + ' ' + d.getHours() + ':' +  ('0'+d.getMinutes()).slice(-2) + ':' + ('0'+d.getSeconds()).slice(-2)
 
-  # 获取当前目录内容
   getCurrentDirContent = ()->
     console.log 'get content!'
-    # 获取用户文件
+
     if not $routeParams.group_id?
       api_point = baseURL+'/api/users/'+$routeParams.user_id+'/files?dir_id='+$routeParams.dir_id
     else
       api_point = baseURL+'/api/groups/'+$routeParams.group_id+'/files?dir_id='+$routeParams.dir_id
     $http.get(api_point)
     .success (res)->
+      console.log 'asdasdads'
       console.log res
       for dir in res.dirs
-        dir.previewPic = "/assets/pic/dir.png"
+        dir.previewPic = "/a/Build/assets/pic/dir.png"
         dir.created_at = getTime(dir.created_at)
         dir.updated_at = getTime(dir.updated_at)
 
@@ -246,7 +193,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         if isPic(file)
           file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" 
         else
-          file.previewPic = "/assets/pic/file.png"
+          file.previewPic = "/a/Build/assets/pic/file.png"
         file.created_at = getTime(file.created_at)
         file.updated_at = getTime(file.updated_at)
         scope.current_dir_content.push file
@@ -263,8 +210,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.groups = res.groups
 
 
-  #============== DRAG & DROP =============
-  # 参考: http://www.webappers.com/2011/09/28/drag-drop-file-upload-with-html5-javascript/
+
   dragEnterLeave = (evt) ->
     # console.log myData
     console.log 'leave'
@@ -283,7 +229,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.dropText = (if ok then "Drop files here" else "Only files are allowed!")
       scope.dropClass = (if ok then "over" else "not-available")
 
-  # 丢在dropbox框框里的时候
+
   boxDrop = (evt) ->
     console.log @id
     console.log "drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer))
@@ -303,7 +249,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
           scope.files.push files[i]
           i++
   
-  # 丢在某文件or文件夹上的时候
+
   itemDrop = (evt) ->
     if @type is 'file' then console.log @version_of else console.log @dir_id
     console.log "drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer))
@@ -323,13 +269,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
           scope.files.push files[i]
           i++
 
-
-
-  # 每次有文件传完了就会出发load事件
-  # 在事件里再重新触发上传操作，实现队列
-  # 当前队列位置可以存在myData里面
-  
-  #============== DRAG & DROP =============
 
   dropbox = document.getElementById("dropbox")
   dropItems = document.getElementsByClassName('dropItems')
@@ -361,7 +300,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
   uploadFile = ()->
-    # 初始化，一开始从0开始
     myData.upload_count = myData.upload_count or 0
 
     nextFile = scope.files[myData.upload_count]
@@ -395,46 +333,16 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
   scope.uploadFile = uploadFile
-    # # 只能一个个文件上传＝_=
-    # for file in scope.files
-    #   console.log $routeParams.dir_id ? 0
-    #   console.log file.name
-    #   # 请求上传用的key
-    #   ((file)->
-    #     $http.post(baseURL+'/api/files', {
-    #       dir_id: $routeParams.dir_id ? 0
-    #       file_name: file.name
-    #     }).success (res)->
-    #       xhr = new XMLHttpRequest()
-    #       xhr.upload.addEventListener "progress", uploadProgress, false
-    #       xhr.addEventListener "load", uploadComplete, false
-    #       xhr.addEventListener "error", uploadFailed, false
-    #       xhr.addEventListener "abort", uploadCanceled, false
-    #       console.log res
-    #       fd = new FormData()
-    #       fd.append "file", file
-    #       fd.append 'policy', res.policy
-    #       fd.append 'signature', res.sign
-    #       xhr.open "POST", "http://v0.api.upyun.com/"+res.bucket
-    #       scope.progressVisible = true
-    #       xhr.send fd
-    #     .error (err)->
-    #       console.log err)(file)
+
       
   uploadComplete = (evt) ->
-    console.log "File: "+scope.files[myData.upload_count].name+' is uploaded.'
+    console.log "File: "+scope.files[myData.upload_count].name+' upload done'
     console.log evt.target.response
-    # 计数加一
     myData.upload_count += 1
-    # 要是当前计数还没达到队列长度，就再上传
-    # = --> 不传
-    # < --> 不传
-    # > ---> 传！
     if scope.files.length > myData.upload_count
       uploadFile()
     else
       delete(myData.upload_count)
-      # 延迟一会儿再抓取新的文件数据
       delay = 2*1000
       setTimeout ()->
         getCurrentDirContent()
@@ -461,7 +369,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     alert "The upload has been canceled by the user or the browser dropped the connection."
 
 
-  # 创建文件夹
   scope.createDir = ()->
     console.log 'gonna create dir'
     dir_id = $routeParams.dir_id or 0
@@ -483,7 +390,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     .success (res)->
       getCurrentDirContent()
 
-  # 创建群组
   scope.createGroup = ()->
     console.log 'gonna create a group'
     name = scope.new_group_name
@@ -494,7 +400,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     .error (err)->
       console.log err
 
-  # 删除文件or文件夹
   scope.deleteItem = (item)->
     api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
     if confirm('sure?')
@@ -515,17 +420,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         getCurrentDirContent()
       .error (err)->
         console.log err
-
-
-
-  ######## #### ##       ######## 
-  ##        ##  ##       ##       
-  ##        ##  ##       ##       
-  ######    ##  ##       ######   
-  ##        ##  ##       ##       
-  ##        ##  ##       ##       
-  ##       #### ######## ######## 
-
+    else
+      alert 'good.'
 
 
 Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
@@ -544,13 +440,7 @@ Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
 
 upCloud.controller Controllers
 
-  ########   #######  ##     ## ######## ######## 
-  ##     ## ##     ## ##     ##    ##    ##       
-  ##     ## ##     ## ##     ##    ##    ##       
-  ########  ##     ## ##     ##    ##    ######   
-  ##   ##   ##     ## ##     ##    ##    ##       
-  ##    ##  ##     ## ##     ##    ##    ##       
-  ##     ##  #######   #######     ##    ######## 
+
 
 upCloud.config ($routeProvider, $locationProvider)->
   $locationProvider.html5Mode true
@@ -561,8 +451,6 @@ upCloud.config ($routeProvider, $locationProvider)->
   .when homeURL,
     templateUrl: tempURL+'/home.partial'
 
-  # 先检查是否登录（看返回的user_id）
-  # 没登录的跳转到首页，登录的跳转到自己的页面
   .when dashboardURL+'/:user_id/:dir_id' ,
     templateUrl: tempURL+'/dashboard.partial'
 
@@ -577,15 +465,3 @@ upCloud.config ($routeProvider, $locationProvider)->
 
   .otherwise 
     redirectTo: tempURL+'/home'
-
-
-
-
-  ######## ##    ## ########  
-  ##       ###   ## ##     ## 
-  ##       ####  ## ##     ## 
-  ######   ## ## ## ##     ## 
-  ##       ##  #### ##     ## 
-  ##       ##   ### ##     ## 
-  ######## ##    ## ########  
-

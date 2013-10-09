@@ -3,7 +3,7 @@ var Controllers, Directives, baseURL, dashboardURL, fileURL, homeURL, indexURL, 
 
 baseURL = 'http://localhost:3000';
 
-tempURL = "";
+tempURL = "/a/Build";
 
 indexURL = tempURL + '/';
 
@@ -22,12 +22,6 @@ upCloud = angular.module('upCloud', ['ngCookies', 'ngRoute']);
 Controllers = {};
 
 Directives = {};
-
-upCloud.config([
-  '$httpProvider', function($httpProvider) {
-    return $httpProvider.defaults.withCredentials = true;
-  }
-]);
 
 upCloud.service('myData', function() {
   var DataStore, myDataStore;
@@ -79,14 +73,10 @@ isLogin = function($http, myData) {
   var deferred;
   deferred = Q.defer();
   $http.get(baseURL + '/api/users/current').success(function(res) {
-    console.log('check login...');
-    console.log(res);
     if (res.user_id === 0) {
-      console.log('not logged in...');
       delete myData.user_id;
       return deferred.resolve(false);
     } else {
-      console.log('logged in!!!');
       myData.user_id = res.user_id;
       return deferred.resolve(true);
     }
@@ -215,11 +205,12 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     }
     return $http.get(api_point).success(function(res) {
       var dir, file, _i, _j, _len, _len1, _ref, _ref1, _results;
+      console.log('asdasdads');
       console.log(res);
       _ref = res.dirs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dir = _ref[_i];
-        dir.previewPic = "/assets/pic/dir.png";
+        dir.previewPic = "/a/Build/assets/pic/dir.png";
         dir.created_at = getTime(dir.created_at);
         dir.updated_at = getTime(dir.updated_at);
       }
@@ -231,7 +222,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         if (isPic(file)) {
           file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
         } else {
-          file.previewPic = "/assets/pic/file.png";
+          file.previewPic = "/a/Build/assets/pic/file.png";
         }
         file.created_at = getTime(file.created_at);
         file.updated_at = getTime(file.updated_at);
@@ -400,7 +391,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
   scope.uploadFile = uploadFile;
   uploadComplete = function(evt) {
     var delay;
-    console.log("File: " + scope.files[myData.upload_count].name + ' is uploaded.');
+    console.log("File: " + scope.files[myData.upload_count].name + ' upload done');
     console.log(evt.target.response);
     myData.upload_count += 1;
     if (scope.files.length > myData.upload_count) {
@@ -489,6 +480,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       }).error(function(err) {
         return console.log(err);
       });
+    } else {
+      return alert('good.');
     }
   };
 };

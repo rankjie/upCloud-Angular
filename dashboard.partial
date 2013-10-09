@@ -111,12 +111,12 @@
       
       <a ng-switch-default data-version_of='{{file.id}}'
           href=http://localhost:3000/a/Build/f/{{file.id}}>
-          <img src="{{file.previewPic}}">
+          <img ng-src="{{file.previewPic}}">
           <br>
           {{file.name}}</a>
       <a ng-switch-when="true" data-dir_id='{{file.id}}'
           href={{current_url_without_dir_id}}/{{file.id}}>
-          <img src="{{file.previewPic}}">
+          <img ng-src="{{file.previewPic}}">
           <br>
           {{file.name}}</a>
       <br>
