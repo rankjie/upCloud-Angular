@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+
+
+  <script type="text/javascript" src='/assets/js/q.js'></script>
+  <script type="text/javascript" src='/assets/js/angular.min.js'></script>
+  <script type="text/javascript" src='/assets/js/angular-cookies.min.js'></script>
+  <script type="text/javascript" src='/assets/js/angular-route.min.js'></script>
+  <script type="text/javascript" src='/assets/js/index.js'></script>
+  <link   type="text/css" rel="stylesheet" href='/assets/css/foundation.min.css'></style>
+  <link   type="text/css" rel="stylesheet" href='/assets/css/normalize.css'></style>
+  <script type="text/javascript" src='/assets/js/vendor/custom.modernizr.js'></script>
+  <script type="text/javascript" src='/assets/js/jquery-1.8.3.min.js'></script>
+  <script type="text/javascript" src='/assets/js/foundation.min.js'></script>
+  <link type="text/css" rel="stylesheet" href='/assets/css/font-awesome.min.css'></style>
+  <link type="text/css" rel="stylesheet" href='/assets/css/dashboard.css'></style>
+
+  <link href="assets/favicon.ico" rel="shortcut icon">
+  <link href="assets/apple-touch-icon.png" rel="apple-touch-icon">
+  
+        <!-- Hammer reload -->
+          <script>
+            setInterval(function(){
+              try {
+                if(typeof ws != 'undefined' && ws.readyState == 1){return true;}
+                ws = new WebSocket('ws://'+(location.host || 'localhost').split(':')[0]+':35353')
+                ws.onopen = function(){ws.onclose = function(){document.location.reload()}}
+                ws.onmessage = function(){
+                  var links = document.getElementsByTagName('link'); 
+                    for (var i = 0; i < links.length;i++) { 
+                    var link = links[i]; 
+                    if (link.rel === 'stylesheet' && !link.href.match(/typekit/)) { 
+                      href = link.href.replace(/((&|\?)hammer=)[^&]+/,''); 
+                      link.href = href + (href.indexOf('?')>=0?'&':'?') + 'hammer='+(new Date().valueOf());
+                    }
+                  }
+                }
+              }catch(e){}
+            }, 1000)
+          </script>
+        <!-- /Hammer reload -->
+      
+  <title>upCloud</title>
+</head>
+
+<body ng-app='upCloud'>
+
+  <header>
+    <nav class="top-bar" ng-controller='navController' ng-init='isLogin = false'>
+  <ul class="title-area">
+    <!-- Title Area -->
+    <li class="name">
+      <h1><a href="http://localhost:3000/a/Build/home">upCloud</a></h1>
+    </li>
+  </ul>
+
+  <section class="top-bar-section">
+    <!-- Left Nav Section -->
+    <ul class="left">
+    </ul>
+
+    <!-- Right Nav Section -->
+    <ul class="right">
+      <li class="has-form" ng-show="isLogin">
+        <a ng-click="logOut()">Log Out</a>
+      </li>
+      <li class="divider"></li>
+      <li class="has-form">
+        <a href="mailto:leijie.hou@upai.com">Report Bug</a>
+      </li>
+    </ul>
+  </section>
+
+</nav>
+
+  </header>
+
+  <!-- for angular template -->
+  <ng-view></ng-view>
+
+  </body>
+
+</html>

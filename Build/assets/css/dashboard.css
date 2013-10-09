@@ -1,0 +1,176 @@
+.button.secondary {
+  background-color: white;
+}
+#navBlock {
+  height: 300px;
+}
+.admin {
+  float: right;
+  display: none;
+}
+.owner {
+  display: none;
+}
+.GroupItem {
+  float: left;
+}
+.GroupItem:hover + .admin, .admin:hover {
+  display: run-in;
+}
+#dropzone {
+  border: 2px dashed #bbb;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font: 20pt bold;
+  color: #bbb;
+  margin-bottom: 20px;
+}
+table { border-collapse: collapse; }
+.percent {
+  position: absolute;
+  width: 100%;
+  height: 14px;
+  z-index: 1;
+  text-align: center;
+  font-size: 0.8em;
+  color: white;
+}
+.progress-bar {
+  width: 100%;
+  height: 14px;
+  border-radius: 5px;
+  border: 1px solid #CCC;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
+  border-image: initial;
+}
+.uploaded {
+  padding: 0;
+  height: 14px;
+  border-radius: 5px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+  border-image: initial;
+}
+.dropbox {
+/*   border: 2px dashed #bbb; */
+/*   border-radius: 5px; */
+  text-align: center;
+  font-size: 8em;
+/*   font: 20pt bold; */
+  color: #bbb;
+/*   margin-bottom: 20px; */
+/*   padding: 20px; */
+}
+.dropbox span {
+  margin-top: 0.9em;
+  display: block;
+}
+.dropbox.not-available {
+  background-color: #e67e22;
+}
+.dropbox.over {
+  color: black;
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+  transform: scale(1.1);
+  
+  -webkit-transition: all 0.2s ease;
+  -moz-transition: all 0.2s ease;
+  -ms-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  
+/*   background-color: #bdc3c7; */
+}
+.dropbox.over span {
+  color: white;
+}
+.fileBlock {
+  position: aboslute;
+  bottom: 0;
+  margin-top: 40px;
+/*
+  position: fixed;
+  bottom: 0;
+*/
+}
+#uploadButton {
+  margin-top: 20px;
+}
+.item {
+  display: inline-block;
+  position: relative;
+  width: 150px;
+  height: 92px;
+  margin-right: 10px;
+  margin-top: 30px;
+/*   background-color: #ecf0f1; */
+  text-align: center;
+}
+.item a img {
+/*   position: absolute; */
+/*   margin-left: 50%; */
+  width: auto;
+  height: 52px;
+  margin: 10px 10px 0px 10px
+  display: block;
+  vertical-align : middle;
+  overflow: hidden;
+}
+.item a {
+  font-size: 14px;
+  margin-top: 10px;
+  vertical-align : middle;
+  color: #bdc3c7;
+  word-wrap: break-word;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+
+.item:hover .DeleteButtonBlock {
+  display: block;
+}
+.DeleteButtonBlock {
+  position: absolute;
+  right: 15px;
+  top: 0px;
+	overflow: auto;
+  display: none;
+}
+.DeleteButton {
+	float: right;
+}
+.ItemButton {
+  color: #95a5a6;
+}
+.ItemButton:hover {
+  color: #f39c12;
+}
+
+
+table {
+  border: none;
+}
+tr {
+  background-color: black;
+}
+
+.NoneSelectable {
+  -moz-user-select: none; 
+  -khtml-user-select: none; 
+  -webkit-user-select: none; 
+  -o-user-select: none;
+}
+
+
+
+body{
+  -webkit-user-select: none;  
+  -moz-user-select: none;    
+  -ms-user-select: none;      
+  user-select: none;
+}

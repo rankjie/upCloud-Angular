@@ -1,0 +1,14 @@
+<div class="small-4 small-centered columns" ng-controller='FormController'>
+  <form name="emailForm" ng-init="isReg = true; action = 'Sign in';" id="loginForm">
+    <div>
+      <input placeholder='email' ng-model="email" type="email" ng-blur="checkEmail()" />
+      <small class='error' ng-show="emailWrong">{{emailError}}</small>
+    </div>
+    <div>
+      <input placeholder='password' ng-model="pwd" type="password"/>
+      <input placeholder='repeat password' ng-hide="isReg" ng-model="pwd_repeat" type="password" ng-change="checkPWD()" />
+      <small class='error' ng-show="pwdWrong">{{pwdError}}</small>
+    </div>
+    <button class="small button" ng-disabled="emailWrong||pwdWrong" ng-click="submit()">{{action}}</button>
+  </form>
+</div>
