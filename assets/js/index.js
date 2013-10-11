@@ -78,34 +78,35 @@ isPic = function(file) {
 isLogin = function($http, myData) {
   var deferred;
   deferred = Q.defer();
-  $http.get(baseURL + '/api/users/current').success(function(res) {
-    console.log('check login...');
-    console.log(res);
-    if (res.user_id === 0) {
-      console.log('not logged in...');
-      delete myData.user_id;
-      return deferred.resolve(false);
-    } else {
-      console.log('logged in!!!');
-      myData.user_id = res.user_id;
-      return deferred.resolve(true);
-    }
-  }).error(function(err) {
-    return deferred.reject(err);
-  });
+  if (myData.user_id != null) {
+    console.log('already in myData');
+    deferred.resolve(true);
+  } else {
+    console.log('gonna check with server');
+    $http.get(baseURL + '/api/users/current').success(function(res) {
+      console.log('check login...');
+      if (res.user_id === 0) {
+        delete myData.user_id;
+        return deferred.resolve(false);
+      } else {
+        myData.user_id = res.user_id;
+        return deferred.resolve(true);
+      }
+    }).error(function(err) {
+      return deferred.reject(err);
+    });
+  }
   return deferred.promise;
 };
 
-Controllers['navController'] = function($scope, $http, $location, myData) {
+Controllers['navController'] = function($scope, $http, $location, myData, $routeParams) {
   $scope.logOut = function() {
     return $http["delete"](baseURL + '/api/session').success(function(res) {
       delete myData.user_id;
       return $location.path(homeURL);
     });
   };
-  if (myData.user_id != null) {
-    return $scope.isLogin = true;
-  }
+  return $scope.isLogin = true;
 };
 
 Controllers['FormController'] = function($scope, $http, $location, myData) {
@@ -115,7 +116,8 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
       return $scope.$apply();
     }
   }, function(err) {
-    return console.log(err);
+    console.log(err);
+    return alert('server error...');
   });
   $scope.checkEmail = function() {
     var mail;
@@ -132,6 +134,9 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
           $scope.isReg = false;
           return $scope.action = 'Sign up';
         }
+      }).error(function(err) {
+        console.log(err);
+        return alert('server error on checking email');
       });
     } else {
       $scope.emailError = "illegal email";
@@ -179,9 +184,8 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, dragEnterLeave, dragOver, dropItems, dropbox, getCurrentDirContent, getGroupList, getTime, item, itemDrop, scope, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress, _i, _len;
+  var boxDrop, changeMember, dragEnterLeave, dragOver, dropItems, dropbox, getCurrentDirContent, getGroupInfo, getGroupList, getTime, item, itemDrop, scope, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress, _i, _len;
   isLogin($http, myData).then(function(logged_in) {
-    console.log(logged_in);
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
         console.log('redirect to your own dashboard... ');
@@ -216,14 +220,20 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     return $http.get(api_point).success(function(res) {
       var dir, file, _i, _j, _len, _len1, _ref, _ref1, _results;
       console.log(res);
+      scope.current_dir_content = [];
+      scope.current_dir_content_trashed = [];
       _ref = res.dirs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dir = _ref[_i];
         dir.previewPic = "/assets/pic/dir.png";
         dir.created_at = getTime(dir.created_at);
         dir.updated_at = getTime(dir.updated_at);
+        if (dir.status === 'trashed') {
+          scope.current_dir_content_trashed.push(dir);
+        } else {
+          scope.current_dir_content.push(dir);
+        }
       }
-      scope.current_dir_content = res.dirs;
       _ref1 = res.files;
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
@@ -235,9 +245,17 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         }
         file.created_at = getTime(file.created_at);
         file.updated_at = getTime(file.updated_at);
-        _results.push(scope.current_dir_content.push(file));
+        if (file.status === 'trashed') {
+          console.log('a trashed file:' + file);
+          _results.push(scope.current_dir_content_trashed.push(file));
+        } else {
+          _results.push(scope.current_dir_content.push(file));
+        }
       }
       return _results;
+    }).error(function(err) {
+      console.log(err);
+      return alert('server down?');
     });
   };
   getGroupList = function() {
@@ -290,7 +308,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     });
     files = evt.dataTransfer.files;
     if (files.length > 0) {
-      return scope.$apply(function() {
+      scope.$apply(function() {
         var i, _results;
         if (scope.files == null) {
           scope.files = [];
@@ -304,6 +322,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         return _results;
       });
     }
+    return console.log(scope.files);
   };
   itemDrop = function(evt) {
     var files;
@@ -386,6 +405,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         xhr.addEventListener("abort", uploadCanceled, false);
         console.log(res);
         fd = new FormData();
+        scope.currentUploadingFile = scope.files[myData.upload_count].name;
         fd.append("file", file);
         fd.append('policy', res.policy);
         fd.append('signature', res.sign);
@@ -407,6 +427,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       return uploadFile();
     } else {
       delete myData.upload_count;
+      scope.progressVisible = false;
+      scope.files = [];
       delay = 2 * 1000;
       return setTimeout(function() {
         return getCurrentDirContent();
@@ -476,7 +498,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       });
     }
   };
-  return scope.editItem = function(item) {
+  scope.editItem = function(item) {
     var api_point, new_name;
     new_name = prompt('new name');
     if (new_name !== '' && (new_name != null)) {
@@ -490,6 +512,129 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         return console.log(err);
       });
     }
+  };
+  getGroupInfo = function(group) {
+    var api_point;
+    api_point = baseURL + '/api/groups/' + group.id + '/members';
+    scope.groupInfo.name = group.name;
+    scope.groupInfo.id = group.id;
+    return $http.get(api_point).success(function(result) {
+      var admins, member, owner, users, _j, _len1, _ref;
+      console.log(result);
+      admins = [];
+      users = [];
+      owner = '';
+      _ref = result.members;
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        member = _ref[_j];
+        switch (member.type) {
+          case 'user':
+            users.push(member);
+            break;
+          case 'admin':
+            admins.push(member);
+            break;
+          case 'owner':
+            owner = member;
+        }
+      }
+      scope.groupInfo.users = users;
+      scope.groupInfo.admins = admins;
+      return scope.groupInfo.owner = owner;
+    }).error(function(err) {
+      console.log(err);
+      return scope.groupInfo.admins = scope.groupInfo.users = [
+        {
+          email: 'Error...'
+        }
+      ];
+    });
+  };
+  scope.showGroupModal = function(group) {
+    scope.groupInfo = {};
+    scope.groupInfo.users = scope.groupInfo.admin = [
+      {
+        email: 'Loading...'
+      }
+    ];
+    scope.groupInfo.owner = {
+      email: 'Loading...'
+    };
+    $('#GroupModal').closeOnBackgroundClick = false;
+    $('#GroupModal').foundation('reveal', 'open');
+    return getGroupInfo(group);
+  };
+  scope.editGroup = function(group) {};
+  scope.deleteGroup = function(group) {};
+  scope.deleteGroupUser = function(group, user_id) {
+    return changeMember(group, user_id, 'del_user');
+  };
+  scope.deleteGroupAdmin = function(group, user_id) {
+    return changeMember(group, user_id, 'del_admin');
+  };
+  scope.addGroupUser = function(group, email) {
+    return changeMember(group, email, 'add_user');
+  };
+  scope.addGroupAdmin = function(group, email) {
+    return changeMember(group, email, 'add_admin');
+  };
+  changeMember = function(group, email, action) {
+    var ar, getID, goChange;
+    getID = function(email) {
+      var deferred, user_api_point;
+      deferred = Q.defer();
+      user_api_point = baseURL + '/api/users/getid' + '?email=' + email;
+      $http.get(user_api_point).success(function(result) {
+        return deferred.resolve(result.id);
+      }, function(err) {
+        console.log(err);
+        return alert('server error...');
+      });
+      return deferred.promise;
+    };
+    goChange = function(ar) {
+      var deferred, group_api_point;
+      console.log('go change!');
+      console.log(ar);
+      deferred = Q.defer();
+      group_api_point = baseURL + '/api/groups/' + group.id;
+      $http.put(group_api_point, ar).success(function(result) {
+        console.log('done!');
+        return deferred.resolve(result);
+      }).error(function(err) {
+        deferred.reject(err);
+        console.log(err);
+        return alert('server error...');
+      });
+      return deferred.promise;
+    };
+    ar = {};
+    if (isNaN(email)) {
+      console.log('have to get id...');
+      return getID(email).then(function(id) {
+        console.log(id);
+        ar[action] = id;
+        console.log(ar);
+        return goChange(ar).then(function(result) {
+          return getGroupInfo(group);
+        }, function(err) {
+          console.log(err);
+          return alert('server error...');
+        });
+      });
+    } else {
+      ar[action] = email;
+      return goChange(ar).then(function(result) {
+        return getGroupInfo(group);
+      }, function(err) {
+        console.log(err);
+        return alert('server error...');
+      });
+    }
+  };
+  return scope.showEditUserModal = function(user) {
+    scope.userInfo = user;
+    return $('#UserEditModal').foundation('reveal', 'open');
   };
 };
 

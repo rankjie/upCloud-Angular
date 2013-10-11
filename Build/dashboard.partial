@@ -9,24 +9,29 @@
     <div id="navBlock">
       <ul class="side-nav">
         <li>
-          <a href='/a/Build/dashboard'><i class="icon-user"></i>  My Files</a>
+          <a href='/dashboard'><i class="icon-user"></i>  My Files</a>
         </li>
-        <li class="divider">
-        <li ng-repeat="group in groups" ng-class="group.liclass">
-          <a class='GroupItem' href=/a/Build/dashboard/group/{{group.id}}/0>
-            <i class="icon-group"></i>  
-            {{group.name}}
-          </a>
-          <i class="icon-remove {{group.type}}"></i>
-          <br>
-        </li>
+        <li class="divider"></li>
+        <div class='GroupList' ng-repeat="group in groups" >
+          <div class="GroupButtonBlock" style="margin-top:3px">
+            <i class="icon-edit GroupButton" ng-click="showGroupModal(group)"></i>
+          </div>
+          <li ng-class="group.liclass">
+            <a class='GroupItem' href=/dashboard/group/{{group.id}}/0>
+              <i class="icon-group"></i>
+              {{group.name}}
+            </a>
+            <i class="icon-remove {{group.type}}"></i>
+            <br>
+          </li>
+        </div>
         <li style="margin-top:20px">
 <!--           <i class="icon-plus"></i>  创建群组 -->
           <form>
-          <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_name' onkeydown="if (event.keyCode == 13) $('#createGroupButton').click()"
-          placeholder='创建群组...'/>
-          <input ng-hide='true' id="createGroupButton" type='submit' class='small secondary button' ng-click="createGroup()" value='创建群组'/></span>
-        </form>
+            <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_name' onkeydown="if (event.keyCode == 13) $('#createGroupButton').click()"
+            placeholder='创建群组...'/>
+            <input ng-hide='true' id="createGroupButton" type='submit' class='small secondary button' ng-click="createGroup()" value='创建群组'/></span>
+          </form>
         </li>
       </ul>
     </div>
@@ -60,16 +65,14 @@
             </span>)
         </div>
 
-        <input type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/>
+        <input ng-show="!progressVisible" type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/>
 
-        <div ng-show="progressVisible">
-          <div class="percent">
-            {{progress}}%
-          </div>
-          <div class="progress-bar">
-            <div class="uploaded" ng-style="{'width': progress+'%'}"></div>
-          </div>
+        <div class="progress large-12 second" ng-show="progressVisible">
+          <span class="meter" ng-style="{'width': progress+'%'}">{{progress}}% -- {{currentUploadingFile.name}}</span>
         </div>
+
+
+
       </div>
       <!-- end -->
 
@@ -110,7 +113,7 @@
       </div>
       
       <a ng-switch-default data-version_of='{{file.id}}'
-          href=http://localhost:3000/a/Build/f/{{file.id}}>
+          href=http://localhost:3000/f/{{file.id}}>
           <img ng-src="{{file.previewPic}}">
           <br>
           {{file.name}}</a>
@@ -124,5 +127,63 @@
     </div>
     
   </div>
+
+
+
+  <div id="GroupModal" class="reveal-modal">
+    <h2>{{groupInfo.name}}&nbsp;&nbsp;&nbsp;<small>{{groupInfo.owner.email}}</small></h2>
+    
+    <div class="row">
+
+
+      <div class="small-6 columns MemberInfoDiv">
+        <p class="lead">普通成员:</p>
+        <div class="row">
+          <div class="small-12 columns">
+            <a class="secondary label group" ng-repeat="user in groupInfo.users"style="margin:2px">
+              {{user.email}}
+              <i class="icon-remove GroupEditButton" ng-click="deleteGroupUser(groupInfo, user.id)"></i>
+            </a>
+          </div>
+          <div class="small-12 columns" style='margin-top:20px'>
+            <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_user' onkeydown="if (event.keyCode == 13) $('#addGroupUserButton').click()"
+            placeholder='添加成员...'/>
+            <input ng-hide='true' id="addGroupUserButton" type='submit' class='small secondary button' ng-click="addGroupUser(groupInfo, new_group_user);new_group_user='';" value='添加成员'/></span>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="small-6 columns MemberInfoDiv">
+        <p class="lead">管理员:</p>
+        <div class="row">
+          <div class="small-12 columns">
+            <a class="secondary label" ng-repeat="admin in groupInfo.admins" style="margin:2px">
+              {{admin.email}}
+              <i class="icon-remove GroupEditButton" ng-click="deleteGroupAdmin(groupInfo, admin.id)"></i>
+            </a>
+          </div>
+          <div class="small-12 columns" style='margin-top:20px'>
+            <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_admin' onkeydown="if (event.keyCode == 13) $('#addGroupAdminButton').click()"
+            placeholder='添加管理员...'/>
+            <input ng-hide='true' id="addGroupAdminButton" type='submit' class='small secondary button' ng-click="addGroupAdmin(groupInfo, new_group_admin);new_group_admin='';" value='添加管理员'/></span>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <a class="close-reveal-modal">&#215;</a>
+  </div>
+
+
+
+
+  <div id="UserEditModal" class="reveal-modal small">
+    <p>{{userInfo.email}}</p>
+    <a class="close-reveal-modal">&#215;</a>
+  </div>
+
+
 
 </div>

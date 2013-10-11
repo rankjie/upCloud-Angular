@@ -93,33 +93,37 @@ isPic = (file)->
 # 检查是否登录（看返回的user_id
 isLogin = ($http, myData)->
   deferred = Q.defer()
-  $http.get(baseURL+'/api/users/current')
-  .success (res)->
-    console.log 'check login...'
-    console.log res
-    if res.user_id is 0
-      console.log 'not logged in...'
-      delete(myData.user_id)
-      deferred.resolve false
-    else
-      console.log 'logged in!!!'
-      myData.user_id = res.user_id
-      deferred.resolve true
-  .error (err)->
-    deferred.reject err
+  # 先判断下myData里面有没有，有的话就直接返回了
+  # console.log myData
+  if myData.user_id?
+    console.log 'already in myData'
+    deferred.resolve true
+  else
+    console.log 'gonna check with server'
+    $http.get(baseURL+'/api/users/current')
+    .success (res)->
+      console.log 'check login...'
+      if res.user_id is 0
+        delete(myData.user_id)
+        deferred.resolve false
+      else
+        myData.user_id = res.user_id
+        deferred.resolve true
+    .error (err)->
+      deferred.reject err
   return deferred.promise
 
 
 
-Controllers['navController'] = ($scope, $http, $location, myData)->
+Controllers['navController'] = ($scope, $http, $location, myData, $routeParams)->
   # 登出按钮
   $scope.logOut = ()->
     $http.delete(baseURL+'/api/session')
     .success (res)->
       delete(myData.user_id)
       $location.path(homeURL)
-  $scope.isLogin = true if myData.user_id?
 
+  $scope.isLogin = true
 
 Controllers['FormController'] = ($scope, $http, $location, myData)->
   isLogin($http, myData)
@@ -130,6 +134,7 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
       $scope.$apply()
   , (err)->
     console.log err
+    alert 'server error...'
 
   $scope.checkEmail = ()->
     mail = $scope.email
@@ -143,6 +148,9 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
         else
           $scope.isReg = false
           $scope.action = 'Sign up'
+      .error (err)->
+        console.log err
+        alert 'server error on checking email'
     else
       $scope.emailError = "illegal email"
       $scope.emailWrong = true
@@ -198,7 +206,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   # 没登录的跳转到首页，登录的跳转到自己的页面
   isLogin($http, myData)
   .then (logged_in)->
-    console.log logged_in
     if logged_in
       # 如果有user_id就说明是在用户文件页面，所以要跳转到用户本身的页面
       # 没有user_id就说明是在请求小组的文件，就不用检查了
@@ -236,12 +243,19 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     $http.get(api_point)
     .success (res)->
       console.log res
+      scope.current_dir_content = []
+      # 回收站内容
+      scope.current_dir_content_trashed = []
       for dir in res.dirs
         dir.previewPic = "/assets/pic/dir.png"
         dir.created_at = getTime(dir.created_at)
         dir.updated_at = getTime(dir.updated_at)
 
-      scope.current_dir_content = res.dirs
+        if dir.status is 'trashed'
+          scope.current_dir_content_trashed.push dir
+        else
+          scope.current_dir_content.push dir
+
       for file in res.files
         if isPic(file)
           file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" 
@@ -249,8 +263,15 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
           file.previewPic = "/assets/pic/file.png"
         file.created_at = getTime(file.created_at)
         file.updated_at = getTime(file.updated_at)
-        scope.current_dir_content.push file
 
+        if file.status is 'trashed'
+          console.log 'a trashed file:'+file
+          scope.current_dir_content_trashed.push file
+        else
+          scope.current_dir_content.push file
+    .error (err)->
+      console.log err
+      alert 'server down?'
   getGroupList = () ->
     console.log 'get group'
     $http.get(baseURL+'/api/users/'+myData.user_id+'/groups')
@@ -302,7 +323,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         while i < files.length
           scope.files.push files[i]
           i++
-  
+    console.log scope.files
+
   # 丢在某文件or文件夹上的时候
   itemDrop = (evt) ->
     if @type is 'file' then console.log @version_of else console.log @dir_id
@@ -384,6 +406,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         xhr.addEventListener "abort", uploadCanceled, false
         console.log res
         fd = new FormData()
+        scope.currentUploadingFile = scope.files[myData.upload_count].name
         fd.append "file", file
         fd.append 'policy', res.policy
         fd.append 'signature', res.sign
@@ -434,6 +457,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       uploadFile()
     else
       delete(myData.upload_count)
+      scope.progressVisible = false
+      scope.files = []
       # 延迟一会儿再抓取新的文件数据
       delay = 2*1000
       setTimeout ()->
@@ -516,6 +541,135 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       .error (err)->
         console.log err
 
+
+  getGroupInfo = (group)->
+    api_point = baseURL + '/api/groups/'+group.id+'/members'
+    scope.groupInfo.name = group.name
+    scope.groupInfo.id   = group.id
+    $http.get(api_point)
+    .success (result)->
+      console.log result
+      admins = []
+      users  = []
+      owner = ''
+      for member in result.members
+        switch member.type
+          when 'user' then users.push member
+          when 'admin' then admins.push member
+          when 'owner' then owner = member
+      scope.groupInfo.users = users
+      scope.groupInfo.admins = admins
+      scope.groupInfo.owner = owner
+    .error (err)->
+      console.log err
+      scope.groupInfo.admins = scope.groupInfo.users = [{email:'Error...'}]
+
+  scope.showGroupModal = (group)->
+    scope.groupInfo = {}
+    scope.groupInfo.users = scope.groupInfo.admin = [{email:'Loading...'}]
+    scope.groupInfo.owner = {email:'Loading...'}
+    $('#GroupModal').closeOnBackgroundClick = false
+    $('#GroupModal').foundation('reveal', 'open')
+    getGroupInfo(group)
+    
+      
+  scope.editGroup = (group)->
+    
+  scope.deleteGroup = (group)->
+
+  # 删除用户
+  scope.deleteGroupUser = (group, user_id)->
+    return changeMember(group, user_id, 'del_user')
+
+  # 删除管理员，即，将管理员降级为普通成员
+  scope.deleteGroupAdmin = (group, user_id)->
+    return changeMember(group, user_id, 'del_admin')
+
+  # 增加用户/降级.成员权限（）
+  scope.addGroupUser = (group, email)->
+    return changeMember(group, email, 'add_user')
+
+  # 增加管理员/升级.成员权限（如果用户已经是普通成员，就会自动提升为管理员；当然也可以将非当前群组成员直接设为管理员）
+  scope.addGroupAdmin = (group, email)->
+    return changeMember(group, email, 'add_admin')
+
+
+  changeMember = (group, email, action)->
+    getID = (email)->
+      deferred = Q.defer()
+      user_api_point = baseURL+'/api/users/getid'+'?email='+email
+      $http.get(user_api_point)
+      .success (result)->
+        deferred.resolve result.id
+      , (err)->
+        console.log err
+        alert 'server error...'
+      return deferred.promise
+    goChange = (ar)->
+      console.log 'go change!'
+      console.log ar
+      deferred = Q.defer()
+      group_api_point = baseURL+'/api/groups/'+group.id
+
+      $http.put(group_api_point, ar)
+      .success (result)->
+        console.log 'done!'
+        deferred.resolve result
+      .error (err)->
+        deferred.reject err
+        console.log err
+        alert 'server error...'
+      return deferred.promise
+
+    # group_api_point = baseURL+'/api/groups/'+group.id
+    # user_api_point = baseURL+'/api/users/getid'+'?email='+email
+    ar = {}
+    # email参数不是数字的话就要获取id
+    if isNaN(email)
+      console.log 'have to get id...'
+      getID(email)
+      .then (id)->
+        console.log id
+        ar[action] = id
+        console.log ar
+        goChange(ar)
+        .then (result)->
+          getGroupInfo(group)
+        , (err)->
+          console.log err
+          alert 'server error...'
+    else 
+      ar[action] = email
+      goChange(ar)
+      .then (result)->
+        getGroupInfo(group)
+      , (err)->
+        console.log err
+        alert 'server error...'
+
+
+    # $http.get(user_api_point)
+    # .success (result)->
+    #   console.log result
+    #   ar = {}
+    #   ar[action] = result.id
+    #   $http.put(group_api_point, ar)
+    #   .success (result)->
+    #     console.log 'done!'
+    #     getGroupInfo(group)
+    #   .error (err)->
+    #     console.log err
+    #     alert 'server error...'
+    # .error (err)->
+    #   console.log err
+    #   alert 'server error...'
+
+
+
+
+  scope.showEditUserModal = (user)->
+    scope.userInfo = user
+    $('#UserEditModal').foundation('reveal', 'open')
 
 
   ######## #### ##       ######## 

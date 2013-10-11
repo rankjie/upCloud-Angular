@@ -99,6 +99,7 @@ table { border-collapse: collapse; }
 #uploadButton {
   margin-top: 20px;
 }
+
 .item {
   display: inline-block;
   position: relative;
@@ -141,15 +142,52 @@ table { border-collapse: collapse; }
 	overflow: auto;
   display: none;
 }
-.DeleteButton {
-	float: right;
-}
-.ItemButton {
+.ItemButton, .GroupEditButton{
   color: #95a5a6;
 }
-.ItemButton:hover {
+.ItemButton:hover, .GroupEditButton:hover {
   color: #f39c12;
 }
+
+
+
+
+
+.GroupList {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+}
+
+.GroupList:hover .GroupButtonBlock {
+  display: block;
+}
+.GroupButtonBlock {
+  position: absolute;
+  right: 0px;
+  overflow: auto;
+  display: none;
+}
+.GroupButton {
+  float: right;
+  margin-left: 3px;
+}
+.GroupButton {
+  color: #95a5a6;
+}
+.GroupButton:hover {
+  color: #f39c12;
+}
+
+
+.MemberInfoDiv {
+  display: relative;
+}
+
+.MemberInfoTitle {
+  display: inline-block;
+}
+
 
 
 table {
@@ -165,8 +203,6 @@ tr {
   -webkit-user-select: none; 
   -o-user-select: none;
 }
-
-
 
 body{
   -webkit-user-select: none;  
