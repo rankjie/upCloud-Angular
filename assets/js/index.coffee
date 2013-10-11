@@ -1,4 +1,8 @@
-baseURL = 'http://localhost:3000'
+# baseURL = 'http://localhost:3000'
+# baseURL = location.protocol + "//" + location.hostname + (location.p ":" + location.port) + "/"
+arr = window.location.href.split("/")
+baseURL = arr[0] + '//' + arr[2]
+
 
 tempURL = ""
 
@@ -284,8 +288,19 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.groups = res.groups
 
 
-  #============== DRAG & DROP =============
-  # 参考: http://www.webappers.com/2011/09/28/drag-drop-file-upload-with-html5-javascript/
+
+
+
+
+    ########  ########     ###     ######        ####       ########  ########   #######  ########  
+    ##     ## ##     ##   ## ##   ##    ##      ##  ##      ##     ## ##     ## ##     ## ##     ## 
+    ##     ## ##     ##  ##   ##  ##             ####       ##     ## ##     ## ##     ## ##     ## 
+    ##     ## ########  ##     ## ##   ####     ####        ##     ## ########  ##     ## ########  
+    ##     ## ##   ##   ######### ##    ##     ##  ## ##    ##     ## ##   ##   ##     ## ##        
+    ##     ## ##    ##  ##     ## ##    ##     ##   ##      ##     ## ##    ##  ##     ## ##        
+    ########  ##     ## ##     ##  ######       ####  ##    ########  ##     ##  #######  ##        
+    # 可参考资料: http://www.webappers.com/2011/09/28/drag-drop-file-upload-with-html5-javascript/
+
   dragEnterLeave = (evt) ->
     # console.log myData
     console.log 'leave'
@@ -351,7 +366,14 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   # 在事件里再重新触发上传操作，实现队列
   # 当前队列位置可以存在myData里面
   
-  #============== DRAG & DROP =============
+    ##     ## ########  ##        #######     ###    ########  
+    ##     ## ##     ## ##       ##     ##   ## ##   ##     ## 
+    ##     ## ##     ## ##       ##     ##  ##   ##  ##     ## 
+    ##     ## ########  ##       ##     ## ##     ## ##     ## 
+    ##     ## ##        ##       ##     ## ######### ##     ## 
+    ##     ## ##        ##       ##     ## ##     ## ##     ## 
+     #######  ##        ########  #######  ##     ## ########  
+
 
   dropbox = document.getElementById("dropbox")
   dropItems = document.getElementsByClassName('dropItems')
@@ -486,6 +508,17 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     alert "The upload has been canceled by the user or the browser dropped the connection."
 
 
+
+
+
+     ######  ########  ########    ###    ######## ######## 
+    ##    ## ##     ## ##         ## ##      ##    ##       
+    ##       ##     ## ##        ##   ##     ##    ##       
+    ##       ########  ######   ##     ##    ##    ######   
+    ##       ##   ##   ##       #########    ##    ##       
+    ##    ## ##    ##  ##       ##     ##    ##    ##       
+     ######  ##     ## ######## ##     ##    ##    ######## 
+
   # 创建文件夹
   scope.createDir = ()->
     console.log 'gonna create dir'
@@ -529,7 +562,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         getCurrentDirContent()
       .error (err)->
         console.log err
+        getCurrentDirContent()
 
+  # 修改文件/文件夹
   scope.editItem = (item)->
     new_name = prompt('new name')
     if new_name isnt '' and new_name?
@@ -541,7 +576,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       .error (err)->
         console.log err
 
-
+  # 获取群组信息
   getGroupInfo = (group)->
     api_point = baseURL + '/api/groups/'+group.id+'/members'
     scope.groupInfo.name = group.name
@@ -568,11 +603,20 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     scope.groupInfo = {}
     scope.groupInfo.users = scope.groupInfo.admin = [{email:'Loading...'}]
     scope.groupInfo.owner = {email:'Loading...'}
-    $('#GroupModal').closeOnBackgroundClick = false
     $('#GroupModal').foundation('reveal', 'open')
     getGroupInfo(group)
-    
-      
+
+  scope.changeGroupName = (group)->
+    new_name = prompt('new name', group.name)
+    group_api_point = baseURL+'/api/groups/'+group.id
+    $http.put(group_api_point, {new_name: new_name})
+    .success (result)->
+      console.log result
+      getGroupList()
+      group.name = new_name
+    .error (err)->
+      console.log err
+
   scope.editGroup = (group)->
     
   scope.deleteGroup = (group)->
@@ -602,25 +646,27 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       .success (result)->
         deferred.resolve result.id
       , (err)->
-        console.log err
-        alert 'server error...'
+        deferred.reject err
       return deferred.promise
     goChange = (ar)->
-      console.log 'go change!'
+      console.log 'gochange!'
       console.log ar
       deferred = Q.defer()
       group_api_point = baseURL+'/api/groups/'+group.id
 
       $http.put(group_api_point, ar)
       .success (result)->
-        console.log 'done!'
+        console.log 'gochange done!'
         deferred.resolve result
       .error (err)->
         deferred.reject err
-        console.log err
-        alert 'server error...'
       return deferred.promise
 
+    errorHandler = (err)->
+      if err.message?
+        alert err.message
+      else
+        alert 'perhaps the server occurred an error. Please report it with log, THX.'
     # group_api_point = baseURL+'/api/groups/'+group.id
     # user_api_point = baseURL+'/api/users/getid'+'?email='+email
     ar = {}
@@ -637,7 +683,10 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
           getGroupInfo(group)
         , (err)->
           console.log err
-          alert 'server error...'
+          errorHandler err
+      , (err)->
+        console.log err
+        errorHandler err
     else 
       ar[action] = email
       goChange(ar)
@@ -645,7 +694,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         getGroupInfo(group)
       , (err)->
         console.log err
-        alert 'server error...'
+        errorHandler err
 
 
     # $http.get(user_api_point)
@@ -663,9 +712,29 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     # .error (err)->
     #   console.log err
     #   alert 'server error...'
+  updateFileModal = (file)->
+    scope.fileInfo = file
+    scope.fileInfo.shareInfo = if file.private then 'Click to Share!' else 'Make It Private!'
+    scope.fileInfo.shareLink = baseURL+'/f/'+file.id
 
+  scope.showShareFileModal = (file)->
+    updateFileModal(file)
+    $('#ShareFileModal').foundation('reveal', 'open')
 
-
+  scope.changeFilePrivate = (file)->
+    scope.fileChanging = true
+    api_point = "#{baseURL}/api/files/#{file.id}"
+    $http.put(api_point, {new_private: !file.private})
+    .success (result)->
+      console.log result
+      file.private = !file.private
+      updateFileModal(file)
+      scope.fileChanging = false
+      # $('.fileLink').
+    .error (err)->
+      console.log err
+      updateFileModal(file)
+      scope.fileChanging = false
 
   scope.showEditUserModal = (user)->
     scope.userInfo = user
@@ -742,4 +811,3 @@ upCloud.config ($routeProvider, $locationProvider)->
   ##       ##  #### ##     ## 
   ##       ##   ### ##     ## 
   ######## ##    ## ########  
-
