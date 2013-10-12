@@ -21,8 +21,6 @@ Controllers = {}
 Directives  = {}
 
 
-
-
 upCloud.config(['$httpProvider', ($httpProvider) ->
   $httpProvider.defaults.withCredentials = true;
 ])
@@ -100,7 +98,6 @@ isLogin = ($http, myData)->
   # 先判断下myData里面有没有，有的话就直接返回了
   # console.log myData
   if myData.user_id?
-    console.log 'already in myData'
     deferred.resolve true
   else
     console.log 'gonna check with server'
@@ -238,44 +235,25 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   # 获取当前目录内容
   getCurrentDirContent = ()->
-    console.log 'get content!'
-    # 获取用户文件
-    if not $routeParams.group_id?
-      api_point = baseURL+'/api/users/'+$routeParams.user_id+'/files?dir_id='+$routeParams.dir_id
-    else
-      api_point = baseURL+'/api/groups/'+$routeParams.group_id+'/files?dir_id='+$routeParams.dir_id
-    $http.get(api_point)
-    .success (res)->
-      console.log res
-      scope.current_dir_content = []
-      # 回收站内容
-      scope.current_dir_content_trashed = []
-      for dir in res.dirs
-        dir.previewPic = "/assets/pic/dir.png"
-        dir.created_at = getTime(dir.created_at)
-        dir.updated_at = getTime(dir.updated_at)
-
-        if dir.status is 'trashed'
-          scope.current_dir_content_trashed.push dir
-        else
-          scope.current_dir_content.push dir
-
-      for file in res.files
-        if isPic(file)
-          file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" 
-        else
-          file.previewPic = "/assets/pic/file.png"
-        file.created_at = getTime(file.created_at)
-        file.updated_at = getTime(file.updated_at)
-
-        if file.status is 'trashed'
-          console.log 'a trashed file:'+file
-          scope.current_dir_content_trashed.push file
-        else
-          scope.current_dir_content.push file
-    .error (err)->
+    getContent('normal')
+    .then (content)->
+      scope.$apply ->
+        scope.current_dir_content = content
+    , (err)->
       console.log err
-      alert 'server down?'
+      alert err.message
+
+  # 获取回收站内容，暂时就直接替换掉当前页面的文件内容了
+  # 需要重写
+  getTrashedContent = ()->
+    getContent('trashed')
+    .then (content)->
+      scope.$apply ->
+        scope.current_dir_content = content
+    , (err)->
+      console.log err
+      alert err.message
+
   getGroupList = () ->
     console.log 'get group'
     $http.get(baseURL+'/api/users/'+myData.user_id+'/groups')
@@ -287,9 +265,58 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       myData.id2group[$routeParams.group_id].liclass = 'active' if $routeParams.group_id
       scope.groups = res.groups
 
+  getContent = (type)->
+    console.log 'get '+type+' content!'
+    deferred = Q.defer()
+    # 获取用户文件
+    if not $routeParams.group_id?
+      api_point = baseURL+'/api/users/'+$routeParams.user_id+'/files/' + type + '?dir_id='+$routeParams.dir_id
+    else
+      api_point = baseURL+'/api/groups/'+$routeParams.group_id+'/files/' + type + '?dir_id='+$routeParams.dir_id
+    console.log api_point
+    $http.get(api_point)
+    .success (res)->
+      content = []
+      for dir in res.dirs
+        dir.previewPic = "/assets/pic/dir.png"
+        dir.created_at = getTime(dir.created_at)
+        dir.updated_at = getTime(dir.updated_at)
+        if type is 'normal'
+          content.push dir if dir.status isnt 'trashed'
+        else
+          content.push dir
+
+      for file in res.files
+        if isPic(file)
+          file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" 
+        else
+          file.previewPic = "/assets/pic/file.png"
+        file.created_at = getTime(file.created_at)
+        file.updated_at = getTime(file.updated_at)
+        if type is 'normal' 
+          content.push file if file.status isnt 'trashed'
+        else
+          content.push file
+
+      deferred.resolve content
+    .error (err)->
+      deferred.reject err
+
+    return deferred.promise
 
 
 
+  scope.switcher = {}
+  scope.switcher.inbin = false
+
+  scope.switcherClick = ()->
+    # 现在在显示回收站内容的话，就重新加载目录内容
+    if scope.switcher.inbin
+      scope.switcher.inbin = false
+      getCurrentDirContent()
+    else
+      scope.switcher.inbin = true
+      getTrashedContent()
 
 
     ########  ########     ###     ######        ####       ########  ########   #######  ########  
@@ -354,11 +381,15 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     files = evt.dataTransfer.files
     if files.length > 0
       scope.$apply ->
-        scope.files = []
-        i = 0
-        while i < files.length
-          scope.files.push files[i]
-          i++
+        # 如果当前已经有文件在队列里
+        if scope.files.length > 0
+          scope.files = scope.files
+        else
+          # 没有的话，就初始化队列
+          scope.files = []
+        # 一个个加到队列里
+        for file in files
+          scope.files.push file
 
 
 
@@ -543,26 +574,51 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   # 创建群组
   scope.createGroup = ()->
-    console.log 'gonna create a group'
-    name = scope.new_group_name
-    scope.new_group_name = ''
-    $http.post(baseURL+'/api/groups', {name: name})
-    .success (res)->
-      getGroupList()
-    .error (err)->
-      console.log err
-
-  # 删除文件or文件夹
-  scope.deleteItem = (item)->
-    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
-    if confirm('sure?')
-      $http.delete(api_point)
+    if confirm('You can NOT delete group for now, you sure?')
+      console.log 'gonna create a group'
+      name = scope.new_group_name
+      scope.new_group_name = ''
+      $http.post(baseURL+'/api/groups', {name: name})
       .success (res)->
-        console.log res
-        getCurrentDirContent()
+        getGroupList()
       .error (err)->
         console.log err
-        getCurrentDirContent()
+    scope.new_group_name = ''
+
+  # trash文件or文件夹
+  scope.deleteItem = (item, action)->
+    console.log action
+    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}/#{action}"
+    console.log api_point
+    $http.delete(api_point)
+    .success (res)->
+      console.log res
+      # 因为有缓存，所以如果刚一进入目录就删的话，这里删完了重新获取也依然会获取到老的数据
+      # 可以加个timedout？或者怎样＝ ＝？
+      if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
+      $('#DeleteItemModal').foundation('reveal', 'close')
+    .error (err)->
+      console.log err
+      if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
+      $('#DeleteItemModal').foundation('reveal', 'close')
+
+  scope.recoverItem = (item)->
+    # 直接edit status？ good
+    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
+    $http.put(api_point, {new_status: 'uploaded'})
+    .success (result)->
+      console.log result
+      getTrashedContent()
+      $('#DeleteItemModal').foundation('reveal', 'close')
+    .error (err)->
+      console.log err
+      alert err.message
+
+
+  scope.showDeleteItemModal = (item)->
+    scope.itemInfo = item
+    $('#DeleteItemModal').foundation('reveal', 'open')
+    
 
   # 修改文件/文件夹
   scope.editItem = (item)->
@@ -572,7 +628,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       $http.put(api_point, {new_name: new_name})
       .success (result)->
         console.log result
-        getCurrentDirContent()
+        console.log scope.switcher.inbin
+        if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
       .error (err)->
         console.log err
 
@@ -735,6 +792,10 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       console.log err
       updateFileModal(file)
       scope.fileChanging = false
+
+
+
+
 
   scope.showEditUserModal = (user)->
     scope.userInfo = user

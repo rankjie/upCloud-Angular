@@ -81,7 +81,6 @@ isLogin = function($http, myData) {
   var deferred;
   deferred = Q.defer();
   if (myData.user_id != null) {
-    console.log('already in myData');
     deferred.resolve(true);
   } else {
     console.log('gonna check with server');
@@ -186,7 +185,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, changeMember, dragEnterLeave, dragOver, dropItems, dropbox, getCurrentDirContent, getGroupInfo, getGroupList, getTime, item, itemDrop, scope, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress, _i, _len;
+  var boxDrop, changeMember, dragEnterLeave, dragOver, dropItems, dropbox, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, item, itemDrop, scope, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress, _i, _len;
   isLogin($http, myData).then(function(logged_in) {
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
@@ -212,52 +211,23 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     return d.getFullYear() + " " + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + ' ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2);
   };
   getCurrentDirContent = function() {
-    var api_point;
-    console.log('get content!');
-    if ($routeParams.group_id == null) {
-      api_point = baseURL + '/api/users/' + $routeParams.user_id + '/files?dir_id=' + $routeParams.dir_id;
-    } else {
-      api_point = baseURL + '/api/groups/' + $routeParams.group_id + '/files?dir_id=' + $routeParams.dir_id;
-    }
-    return $http.get(api_point).success(function(res) {
-      var dir, file, _i, _j, _len, _len1, _ref, _ref1, _results;
-      console.log(res);
-      scope.current_dir_content = [];
-      scope.current_dir_content_trashed = [];
-      _ref = res.dirs;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dir = _ref[_i];
-        dir.previewPic = "/assets/pic/dir.png";
-        dir.created_at = getTime(dir.created_at);
-        dir.updated_at = getTime(dir.updated_at);
-        if (dir.status === 'trashed') {
-          scope.current_dir_content_trashed.push(dir);
-        } else {
-          scope.current_dir_content.push(dir);
-        }
-      }
-      _ref1 = res.files;
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        file = _ref1[_j];
-        if (isPic(file)) {
-          file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
-        } else {
-          file.previewPic = "/assets/pic/file.png";
-        }
-        file.created_at = getTime(file.created_at);
-        file.updated_at = getTime(file.updated_at);
-        if (file.status === 'trashed') {
-          console.log('a trashed file:' + file);
-          _results.push(scope.current_dir_content_trashed.push(file));
-        } else {
-          _results.push(scope.current_dir_content.push(file));
-        }
-      }
-      return _results;
-    }).error(function(err) {
+    return getContent('normal').then(function(content) {
+      return scope.$apply(function() {
+        return scope.current_dir_content = content;
+      });
+    }, function(err) {
       console.log(err);
-      return alert('server down?');
+      return alert(err.message);
+    });
+  };
+  getTrashedContent = function() {
+    return getContent('trashed').then(function(content) {
+      return scope.$apply(function() {
+        return scope.current_dir_content = content;
+      });
+    }, function(err) {
+      console.log(err);
+      return alert(err.message);
     });
   };
   getGroupList = function() {
@@ -276,6 +246,68 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       }
       return scope.groups = res.groups;
     });
+  };
+  getContent = function(type) {
+    var api_point, deferred;
+    console.log('get ' + type + ' content!');
+    deferred = Q.defer();
+    if ($routeParams.group_id == null) {
+      api_point = baseURL + '/api/users/' + $routeParams.user_id + '/files/' + type + '?dir_id=' + $routeParams.dir_id;
+    } else {
+      api_point = baseURL + '/api/groups/' + $routeParams.group_id + '/files/' + type + '?dir_id=' + $routeParams.dir_id;
+    }
+    console.log(api_point);
+    $http.get(api_point).success(function(res) {
+      var content, dir, file, _i, _j, _len, _len1, _ref, _ref1;
+      content = [];
+      _ref = res.dirs;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        dir = _ref[_i];
+        dir.previewPic = "/assets/pic/dir.png";
+        dir.created_at = getTime(dir.created_at);
+        dir.updated_at = getTime(dir.updated_at);
+        if (type === 'normal') {
+          if (dir.status !== 'trashed') {
+            content.push(dir);
+          }
+        } else {
+          content.push(dir);
+        }
+      }
+      _ref1 = res.files;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        file = _ref1[_j];
+        if (isPic(file)) {
+          file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
+        } else {
+          file.previewPic = "/assets/pic/file.png";
+        }
+        file.created_at = getTime(file.created_at);
+        file.updated_at = getTime(file.updated_at);
+        if (type === 'normal') {
+          if (file.status !== 'trashed') {
+            content.push(file);
+          }
+        } else {
+          content.push(file);
+        }
+      }
+      return deferred.resolve(content);
+    }).error(function(err) {
+      return deferred.reject(err);
+    });
+    return deferred.promise;
+  };
+  scope.switcher = {};
+  scope.switcher.inbin = false;
+  scope.switcherClick = function() {
+    if (scope.switcher.inbin) {
+      scope.switcher.inbin = false;
+      return getCurrentDirContent();
+    } else {
+      scope.switcher.inbin = true;
+      return getTrashedContent();
+    }
   };
   dragEnterLeave = function(evt) {
     console.log('leave');
@@ -344,13 +376,16 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     files = evt.dataTransfer.files;
     if (files.length > 0) {
       return scope.$apply(function() {
-        var i, _results;
-        scope.files = [];
-        i = 0;
+        var file, _i, _len, _results;
+        if (scope.files.length > 0) {
+          scope.files = scope.files;
+        } else {
+          scope.files = [];
+        }
         _results = [];
-        while (i < files.length) {
-          scope.files.push(files[i]);
-          _results.push(i++);
+        for (_i = 0, _len = files.length; _i < _len; _i++) {
+          file = files[_i];
+          _results.push(scope.files.push(file));
         }
         return _results;
       });
@@ -477,29 +512,60 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
   };
   scope.createGroup = function() {
     var name;
-    console.log('gonna create a group');
-    name = scope.new_group_name;
-    scope.new_group_name = '';
-    return $http.post(baseURL + '/api/groups', {
-      name: name
-    }).success(function(res) {
-      return getGroupList();
-    }).error(function(err) {
-      return console.log(err);
-    });
-  };
-  scope.deleteItem = function(item) {
-    var api_point;
-    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
-    if (confirm('sure?')) {
-      return $http["delete"](api_point).success(function(res) {
-        console.log(res);
-        return getCurrentDirContent();
+    if (confirm('You can NOT delete group for now, you sure?')) {
+      console.log('gonna create a group');
+      name = scope.new_group_name;
+      scope.new_group_name = '';
+      $http.post(baseURL + '/api/groups', {
+        name: name
+      }).success(function(res) {
+        return getGroupList();
       }).error(function(err) {
-        console.log(err);
-        return getCurrentDirContent();
+        return console.log(err);
       });
     }
+    return scope.new_group_name = '';
+  };
+  scope.deleteItem = function(item, action) {
+    var api_point;
+    console.log(action);
+    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id + "/" + action;
+    console.log(api_point);
+    return $http["delete"](api_point).success(function(res) {
+      console.log(res);
+      if (scope.switcher.inbin) {
+        getTrashedContent();
+      } else {
+        getCurrentDirContent();
+      }
+      return $('#DeleteItemModal').foundation('reveal', 'close');
+    }).error(function(err) {
+      console.log(err);
+      if (scope.switcher.inbin) {
+        getTrashedContent();
+      } else {
+        getCurrentDirContent();
+      }
+      return $('#DeleteItemModal').foundation('reveal', 'close');
+    });
+  };
+  scope.recoverItem = function(item) {
+    var api_point;
+    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
+    return $http.put(api_point, {
+      new_status: 'uploaded'
+    }).success(function(result) {
+      console.log(result);
+      getTrashedContent();
+      return $('#DeleteItemModal').foundation('reveal', 'close');
+    }).error(function(err) {
+      console.log(err);
+      return alert(err.message);
+    });
+  };
+  scope.showDeleteItemModal = function(item) {
+    scope.itemInfo = item;
+    return $('#DeleteItemModal').foundation('reveal', 'open');
   };
   scope.editItem = function(item) {
     var api_point, new_name;
@@ -510,7 +576,12 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         new_name: new_name
       }).success(function(result) {
         console.log(result);
-        return getCurrentDirContent();
+        console.log(scope.switcher.inbin);
+        if (scope.switcher.inbin) {
+          return getTrashedContent();
+        } else {
+          return getCurrentDirContent();
+        }
       }).error(function(err) {
         return console.log(err);
       });
