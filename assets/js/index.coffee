@@ -258,7 +258,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     console.log 'get group'
     $http.get(baseURL+'/api/users/'+myData.user_id+'/groups')
     .success (res)->
-      console.log res
+      # console.log res
       myData.id2group = {}
       for group in res.groups
         myData.id2group[group.id] = group
@@ -273,7 +273,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       api_point = baseURL+'/api/users/'+$routeParams.user_id+'/files/' + type + '?dir_id='+$routeParams.dir_id
     else
       api_point = baseURL+'/api/groups/'+$routeParams.group_id+'/files/' + type + '?dir_id='+$routeParams.dir_id
-    console.log api_point
+    # console.log api_point
     $http.get(api_point)
     .success (res)->
       content = []
@@ -369,6 +369,102 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
       $('#uploadButton').click() if autoUpload
 
+
+
+
+
+
+
+        #### ######## ######## ##     ##    ########  ########   #######  ########  
+           ##     ##    ##       ###   ###    ##     ## ##     ## ##     ## ##     ## 
+           ##     ##    ##       #### ####    ##     ## ##     ## ##     ## ##     ## 
+           ##     ##    ######   ## ### ##    ##     ## ########  ##     ## ########  
+           ##     ##    ##       ##     ##    ##     ## ##   ##   ##     ## ##        
+           ##     ##    ##       ##     ##    ##     ## ##    ##  ##     ## ##        
+          ####    ##    ######## ##     ##    ########  ##     ##  #######  ##        
+  
+  # 会发多次请求，需要debug
+
+
+  changeParentDir = (item, new_parent_dir_id)->
+    deferred = Q.defer()
+    # 如果是群组，那就要改group_parent_directory_id
+    # 非群组，就该parent_directory_id
+    if $routeParams.group_id
+      put_data = 
+        new_group_parent_dir_id: new_parent_dir_id
+    else
+      # 非群组的
+      put_data = 
+        new_parent_dir_id: new_parent_dir_id
+    api_point = baseURL+'/api/'+item.item_type+'s/'+item.item_id
+    $http.put(api_point, put_data)
+    .success (result)->
+      deferred.resolve result
+    .error (err)->
+      deferred.reject err
+    return deferred.promise
+
+  testDrop = (evt, ui)->
+    console.log '!!!!!!!!!!droped !!!!!!!!!!!!!!!!'
+    evt.originalEvent.stopPropagation()
+    evt.originalEvent.preventDefault()
+
+    dropped  = evt.target
+
+    dragged_item = JSON.parse(evt.originalEvent.dataTransfer.getData('text'))
+
+    # 父子关系：  div > a(data!)   > IMG
+    #                 SMALL
+    # 如果丢到了IMG上，那就要上层的
+    # small上，就上层的子层...
+    # div上，子曾
+    switch dropped.tagName 
+      when 'IMG'   then dropped_item = dropped.parentNode.dataset
+      when 'A'     then dropped_item = dropped.dataset
+      when 'SMALL' then dropped_item = dropped.parentNode.children[1].dataset
+      when 'DIV'   then dropped_item = dropped.children[1].dataset
+    
+    # console.log dropped_item.item_id
+    # console.log dropped_item.item_type
+
+
+    # 如果拽过来的和丢下去的不是同一个文件，并且别丢的是个文件夹
+    # 那就触发修改文件/文件夹上层目录的操作
+    # 暂时先不增加创建版本的功能，只做移动目录
+    # 还可以增加： 拖到上进目录、拖到根目录、拖到回收站的功能，drag触发的时候更改回收站按钮的文字，显示拖到根目录和上级目录的区域
+    if dropped_item.item_id isnt dragged_item.item_id and dropped_item.item_type is 'dir'
+      changeParentDir(dragged_item, dropped_item.item_id)
+      .then (result)->
+        console.log result
+        if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
+      , (err)->
+        console.log err
+        alert err.message
+
+
+  testOver = (evt)->
+    evt.originalEvent.stopPropagation()
+    evt.originalEvent.preventDefault()
+    console.log 'over!!!!'
+
+  itemDrag = (evt)->
+    theItem = $(this).children()[1]
+    iteminfo = 
+      item_id: theItem.dataset.item_id
+      item_type: theItem.dataset.item_type
+    evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo))
+
+  droppableItem = $(".item")
+
+  # console.log droppableItem
+
+
+  droppableItem.live('dragover', testOver)
+  droppableItem.live('drop', testDrop)
+  droppableItem.live('dragstart', itemDrag)
+
+
   # # 丢在某文件or文件夹上的时候
   # itemDrop = (evt) ->
   #   if @type is 'file' then console.log @version_of else console.log @dir_id
@@ -418,19 +514,16 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
   dropbox = document.getElementById("dropbox")
-  # dropItems = document.getElementsByClassName('dropItems')
-  # console.log dropItems
-
+  
+  
   dropbox.addEventListener "dragenter", dragEnterLeave, false
   dropbox.addEventListener "dragleave", dragEnterLeave, false
   dropbox.addEventListener "dragover", dragOver, false
   dropbox.addEventListener "drop", boxDrop, false
 
-  # for item in dropItems
-  #   item.addEventListener "dragenter", dragEnterLeave, false
-  #   item.addEventListener "dragleave", dragEnterLeave, false
-  #   item.addEventListener "dragover", dragOver, false
-  #   item.addEventListener 'drop', itemDrop, false
+    # item.addEventListener "dragenter", dragEnterLeave, false
+    # item.addEventListener "dragleave", dragEnterLeave, false
+  
   
 
   scope.setFiles = (element) ->
@@ -592,7 +685,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   scope.deleteItem = (item, action)->
     console.log action
     api_point = "#{baseURL}/api/#{item.type}s/#{item.id}/#{action}"
-    console.log api_point
+    # console.log api_point
     $http.delete(api_point)
     .success (res)->
       console.log res

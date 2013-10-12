@@ -92,7 +92,7 @@
 
 
   <!-- 右侧column -->
-  <div class="large-10 columns" id="contentBlock" >
+  <div class="large-10 columns" id="contentBlock">
     <div id="ControlButtonBlock">
       <div id='NewDirBlock' style="display:inline-block;" >
         <form>
@@ -114,25 +114,24 @@
         <a ng-switch-when="true" class="small secondary button" ng-click="switcherClick()"><i class="icon-reply"></i>&nbsp;返回</a>
       </div>
     </div>
-  
-    <div ng-repeat="file in current_dir_content | orderBy:predicate:reverse" class='item' ng-switch="file.type === 'dir'" id="item_{{file.id}}">
-      
-      <div  class="DeleteButtonBlock">
+
+    <div ng-repeat="file in current_dir_content | orderBy:predicate:reverse" class='item' ng-switch="file.type === 'dir'" id="item_{{file.id}}" draggable="true">
+      <div  class="DeleteButtonBlock" draggable="false">
         <i ng-switch-when="false" class="icon-share ItemButton" ng-click="showShareFileModal(file)" ng-hide="switcher.inbin"><br></i>
         <i class="icon-edit ItemButton" ng-click="editItem(file)"></i><br>
         <!-- <i class="icon-remove ItemButton" ng-click="showDeleteItemModal(file)" ng-hide="switcher.inbin"></i> -->
         <i class="icon-trash ItemButton" ng-click="showDeleteItemModal(file)"></i>
       </div>
       <!-- file -->
-      <a ng-switch-when="false" data-version_of='{{file.id}}'
-          href=http://localhost:3000/f/{{file.id}}>
-          <img ng-src="{{file.previewPic}}">
+      <a ng-switch-when="false" data-item_id='{{file.id}}' data-item_type='{{file.type}}'
+          href=http://localhost:3000/f/{{file.id}} draggable="false">
+          <img ng-src="{{file.previewPic}}" draggable="false">
           <br>
           {{file.name}}</a>
       <!-- dir -->
-      <a ng-switch-when="true" data-dir_id='{{file.id}}'
-          href={{current_url_without_dir_id}}/{{file.id}}>
-          <img ng-src="{{file.previewPic}}">
+      <a ng-switch-when="true" data-item_id='{{file.id}}' data-item_type='{{file.type}}'
+          href={{current_url_without_dir_id}}/{{file.id}} draggable="false">
+          <img ng-src="{{file.previewPic}}" draggable="false">
           <br>
           {{file.name}}</a>
       <br>

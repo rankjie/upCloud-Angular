@@ -185,7 +185,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, changeMember, dragEnterLeave, dragOver, dropbox, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, scope, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
+  var boxDrop, changeMember, changeParentDir, dragEnterLeave, dragOver, dropbox, droppableItem, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, itemDrag, scope, testDrop, testOver, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
   isLogin($http, myData).then(function(logged_in) {
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
@@ -234,7 +234,6 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     console.log('get group');
     return $http.get(baseURL + '/api/users/' + myData.user_id + '/groups').success(function(res) {
       var group, _i, _len, _ref;
-      console.log(res);
       myData.id2group = {};
       _ref = res.groups;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -256,7 +255,6 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     } else {
       api_point = baseURL + '/api/groups/' + $routeParams.group_id + '/files/' + type + '?dir_id=' + $routeParams.dir_id;
     }
-    console.log(api_point);
     $http.get(api_point).success(function(res) {
       var content, dir, file, _i, _j, _len, _len1, _ref, _ref1;
       content = [];
@@ -354,6 +352,78 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       }
     }
   };
+  changeParentDir = function(item, new_parent_dir_id) {
+    var api_point, deferred, put_data;
+    deferred = Q.defer();
+    if ($routeParams.group_id) {
+      put_data = {
+        new_group_parent_dir_id: new_parent_dir_id
+      };
+    } else {
+      put_data = {
+        new_parent_dir_id: new_parent_dir_id
+      };
+    }
+    api_point = baseURL + '/api/' + item.item_type + 's/' + item.item_id;
+    $http.put(api_point, put_data).success(function(result) {
+      return deferred.resolve(result);
+    }).error(function(err) {
+      return deferred.reject(err);
+    });
+    return deferred.promise;
+  };
+  testDrop = function(evt, ui) {
+    var dragged_item, dropped, dropped_item;
+    console.log('!!!!!!!!!!droped !!!!!!!!!!!!!!!!');
+    evt.originalEvent.stopPropagation();
+    evt.originalEvent.preventDefault();
+    dropped = evt.target;
+    dragged_item = JSON.parse(evt.originalEvent.dataTransfer.getData('text'));
+    switch (dropped.tagName) {
+      case 'IMG':
+        dropped_item = dropped.parentNode.dataset;
+        break;
+      case 'A':
+        dropped_item = dropped.dataset;
+        break;
+      case 'SMALL':
+        dropped_item = dropped.parentNode.children[1].dataset;
+        break;
+      case 'DIV':
+        dropped_item = dropped.children[1].dataset;
+    }
+    if (dropped_item.item_id !== dragged_item.item_id && dropped_item.item_type === 'dir') {
+      return changeParentDir(dragged_item, dropped_item.item_id).then(function(result) {
+        console.log(result);
+        if (scope.switcher.inbin) {
+          return getTrashedContent();
+        } else {
+          return getCurrentDirContent();
+        }
+      }, function(err) {
+        console.log(err);
+        return alert(err.message);
+      });
+    }
+  };
+  testOver = function(evt) {
+    evt.originalEvent.stopPropagation();
+    evt.originalEvent.preventDefault();
+    return console.log('over!!!!');
+  };
+  itemDrag = function(evt) {
+    var iteminfo, theItem;
+    theItem = $(this).children()[1];
+    iteminfo = {
+      item_id: theItem.dataset.item_id,
+      item_type: theItem.dataset.item_type
+    };
+    return evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo));
+  };
+  droppableItem = $(".item");
+  droppableItem.live('dragover', testOver);
+  droppableItem.live('drop', testDrop);
+  droppableItem.live('dragstart', itemDrag);
   dropbox = document.getElementById("dropbox");
   dropbox.addEventListener("dragenter", dragEnterLeave, false);
   dropbox.addEventListener("dragleave", dragEnterLeave, false);
@@ -484,7 +554,6 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     var api_point;
     console.log(action);
     api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id + "/" + action;
-    console.log(api_point);
     return $http["delete"](api_point).success(function(res) {
       console.log(res);
       if (scope.switcher.inbin) {
