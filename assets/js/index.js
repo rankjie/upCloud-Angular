@@ -185,7 +185,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, changeMember, dragEnterLeave, dragOver, dropItems, dropbox, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, item, itemDrop, scope, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress, _i, _len;
+  var boxDrop, changeMember, dragEnterLeave, dragOver, dropbox, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, scope, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
   isLogin($http, myData).then(function(logged_in) {
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
@@ -330,98 +330,54 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     });
   };
   boxDrop = function(evt) {
-    var files;
-    console.log(this.id);
+    var autoUpload, file, files, _i, _len;
     console.log("drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer)));
-    console.log('drop');
     evt.stopPropagation();
     evt.preventDefault();
-    scope.$apply(function() {
-      scope.dropText = "Drop files here";
-      return scope.dropClass = "";
-    });
     files = evt.dataTransfer.files;
+    scope.dropClass = "";
     if (files.length > 0) {
-      scope.$apply(function() {
-        var i, _results;
-        if (scope.files == null) {
-          scope.files = [];
-        }
-        i = 0;
-        _results = [];
-        while (i < files.length) {
-          scope.files.push(files[i]);
-          _results.push(i++);
-        }
-        return _results;
-      });
-    }
-    return console.log(scope.files);
-  };
-  itemDrop = function(evt) {
-    var files;
-    if (this.type === 'file') {
-      console.log(this.version_of);
-    } else {
-      console.log(this.dir_id);
-    }
-    console.log("drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer)));
-    console.log('drop');
-    evt.stopPropagation();
-    evt.preventDefault();
-    scope.$apply(function() {
-      scope.dropText = "Drop files here";
-      return scope.dropClass = "";
-    });
-    files = evt.dataTransfer.files;
-    if (files.length > 0) {
-      return scope.$apply(function() {
-        var file, _i, _len, _results;
-        if (scope.files.length > 0) {
-          scope.files = scope.files;
-        } else {
-          scope.files = [];
-        }
-        _results = [];
-        for (_i = 0, _len = files.length; _i < _len; _i++) {
-          file = files[_i];
-          _results.push(scope.files.push(file));
-        }
-        return _results;
-      });
+      if ((scope.files == null) || scope.files.length === 0) {
+        console.log('no file was uploading~');
+        autoUpload = true;
+        scope.files = [];
+      } else {
+        console.log('okay... just insert into the list');
+        autoUpload = false;
+      }
+      for (_i = 0, _len = files.length; _i < _len; _i++) {
+        file = files[_i];
+        scope.files.push(file);
+      }
+      if (autoUpload) {
+        return $('#uploadButton').click();
+      }
     }
   };
   dropbox = document.getElementById("dropbox");
-  dropItems = document.getElementsByClassName('dropItems');
-  scope.dropText = "Drop files here";
   dropbox.addEventListener("dragenter", dragEnterLeave, false);
   dropbox.addEventListener("dragleave", dragEnterLeave, false);
   dropbox.addEventListener("dragover", dragOver, false);
   dropbox.addEventListener("drop", boxDrop, false);
-  for (_i = 0, _len = dropItems.length; _i < _len; _i++) {
-    item = dropItems[_i];
-    item.addEventListener("dragenter", dragEnterLeave, false);
-    item.addEventListener("dragleave", dragEnterLeave, false);
-    item.addEventListener("dragover", dragOver, false);
-    item.addEventListener('drop', itemDrop, false);
-  }
   scope.setFiles = function(element) {
     return scope.$apply(function(scope) {
-      var i;
+      var file, _i, _len, _ref;
       console.log("files:", element.files);
-      scope.files = [];
-      i = 0;
-      while (i < element.files.length) {
-        scope.files.push(element.files[i]);
-        i++;
+      if (scope.files == null) {
+        scope.files = [];
+      }
+      _ref = element.files;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        file = _ref[_i];
+        scope.files.push(file);
       }
       return scope.progressVisible = false;
     });
   };
   uploadFile = function() {
     var nextFile;
-    myData.upload_count = myData.upload_count || 0;
-    nextFile = scope.files[myData.upload_count];
+    nextFile = scope.files[0];
+    console.log('uploading ' + nextFile.name);
     return (function(file) {
       var post_data;
       post_data = {
@@ -440,9 +396,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         xhr.addEventListener("load", uploadComplete, false);
         xhr.addEventListener("error", uploadFailed, false);
         xhr.addEventListener("abort", uploadCanceled, false);
-        console.log(res);
         fd = new FormData();
-        scope.currentUploadingFile = scope.files[myData.upload_count].name;
+        scope.currentUploadingFile = nextFile.name;
         fd.append("file", file);
         fd.append('policy', res.policy);
         fd.append('signature', res.sign);
@@ -457,13 +412,12 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
   scope.uploadFile = uploadFile;
   uploadComplete = function(evt) {
     var delay;
-    console.log("File: " + scope.files[myData.upload_count].name + ' is uploaded.');
+    console.log("File: " + scope.files[0].name + ' is uploaded.');
     console.log(evt.target.response);
-    myData.upload_count += 1;
-    if (scope.files.length > myData.upload_count) {
+    scope.files.splice(0, 1);
+    if (scope.files.length > 0) {
       return uploadFile();
     } else {
-      delete myData.upload_count;
       scope.progressVisible = false;
       scope.files = [];
       delay = 2 * 1000;
@@ -477,12 +431,12 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       if (evt.lengthComputable) {
         return scope.progress = Math.round(evt.loaded * 100 / evt.total);
       } else {
-        return scope.progress = "unable to compute";
+        return scope.progress = "unable to compute progress";
       }
     });
   };
   uploadFailed = function(evt) {
-    return alert("There was an error attempting to upload the file.");
+    return alert("An error occured while uploading the file.");
   };
   uploadCanceled = function(evt) {
     scope.$apply(function() {
@@ -593,14 +547,14 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     scope.groupInfo.name = group.name;
     scope.groupInfo.id = group.id;
     return $http.get(api_point).success(function(result) {
-      var admins, member, owner, users, _j, _len1, _ref;
+      var admins, member, owner, users, _i, _len, _ref;
       console.log(result);
       admins = [];
       users = [];
       owner = '';
       _ref = result.members;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        member = _ref[_j];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        member = _ref[_i];
         switch (member.type) {
           case 'user':
             users.push(member);

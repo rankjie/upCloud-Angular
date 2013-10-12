@@ -348,49 +348,60 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   # 丢在dropbox框框里的时候
   boxDrop = (evt) ->
-    console.log @id
     console.log "drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer))
     # console.log myData
-    console.log 'drop'
     evt.stopPropagation()
     evt.preventDefault()
-    scope.$apply ->
-      scope.dropText = "Drop files here"
-      scope.dropClass = ""
     files = evt.dataTransfer.files
+    scope.dropClass = ""
     if files.length > 0
-      scope.$apply ->
-        scope.files ?= []
-        i = 0
-        while i < files.length
-          scope.files.push files[i]
-          i++
-    console.log scope.files
+      # scope.$apply ->
+      if not scope.files? or scope.files.length is 0
+        console.log 'no file was uploading~'
+        autoUpload = true
+        scope.files = []
+      else 
+        console.log 'okay... just insert into the list'
+        autoUpload = false
 
-  # 丢在某文件or文件夹上的时候
-  itemDrop = (evt) ->
-    if @type is 'file' then console.log @version_of else console.log @dir_id
-    console.log "drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer))
-    # console.log myData
-    console.log 'drop'
-    evt.stopPropagation()
-    evt.preventDefault()
-    scope.$apply ->
-      scope.dropText = "Drop files here"
-      scope.dropClass = ""
-    files = evt.dataTransfer.files
-    if files.length > 0
-      scope.$apply ->
-        # 如果当前已经有文件在队列里
-        if scope.files.length > 0
-          scope.files = scope.files
-        else
-          # 没有的话，就初始化队列
-          scope.files = []
-        # 一个个加到队列里
-        for file in files
-          scope.files.push file
+      for file in files
+        scope.files.push file
 
+      $('#uploadButton').click() if autoUpload
+
+  # # 丢在某文件or文件夹上的时候
+  # itemDrop = (evt) ->
+  #   if @type is 'file' then console.log @version_of else console.log @dir_id
+  #   console.log "drop evt:", JSON.parse(JSON.stringify(evt.dataTransfer))
+  #   # console.log myData
+  #   console.log 'drop'
+  #   evt.stopPropagation()
+  #   evt.preventDefault()
+  #   console.log 'yooooo~~~~'
+  #   scope.$apply ->
+  #     scope.dropText = "Drop files here"
+  #     scope.dropClass = ""
+  #   files = evt.dataTransfer.files
+  #   console.log 'fine = ='
+  #   if files.length > 0
+  #     console.log 'apply!!!!'
+  #     scope.$apply ->
+  #       # 如果当前已经有文件在队列里
+  #       if scope.files.length > 0
+  #         scope.files = scope.files
+  #       else
+  #         # 没有的话，就初始化队列
+  #         scope.files = []
+  #       # 一个个加到队列里
+  #       for file in files
+  #         scope.files.push file
+
+  #     # 如果现在没有在上传文件（通过上传文件的计数来判断），那就触发上传按钮
+  #     if not myData.upload_count? or myData.upload_count > 0
+  #       console.log 'no file was uploading~'
+  #       # $('#uploadButton').click()
+  #     else
+  #       console.log 'okay... just insert into the list'
 
 
   # 每次有文件传完了就会出发load事件
@@ -407,40 +418,38 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
   dropbox = document.getElementById("dropbox")
-  dropItems = document.getElementsByClassName('dropItems')
+  # dropItems = document.getElementsByClassName('dropItems')
   # console.log dropItems
 
-  scope.dropText = "Drop files here"
   dropbox.addEventListener "dragenter", dragEnterLeave, false
   dropbox.addEventListener "dragleave", dragEnterLeave, false
   dropbox.addEventListener "dragover", dragOver, false
   dropbox.addEventListener "drop", boxDrop, false
 
-  for item in dropItems
-    item.addEventListener "dragenter", dragEnterLeave, false
-    item.addEventListener "dragleave", dragEnterLeave, false
-    item.addEventListener "dragover", dragOver, false
-    item.addEventListener 'drop', itemDrop, false
+  # for item in dropItems
+  #   item.addEventListener "dragenter", dragEnterLeave, false
+  #   item.addEventListener "dragleave", dragEnterLeave, false
+  #   item.addEventListener "dragover", dragOver, false
+  #   item.addEventListener 'drop', itemDrop, false
   
 
   scope.setFiles = (element) ->
     scope.$apply (scope) ->
       console.log "files:", element.files
-      scope.files = []
-      i = 0
-
-      while i < element.files.length
-        scope.files.push element.files[i]
-        i++
+      scope.files ?= []
+      for file in element.files
+        scope.files.push file
+      # i = 0
+      # while i < element.files.length
+      #   scope.files.push element.files[i]
+      #   i++
       scope.progressVisible = false
 
 
   uploadFile = ()->
-    # 初始化，一开始从0开始
-    myData.upload_count = myData.upload_count or 0
-
-    nextFile = scope.files[myData.upload_count]
-
+    # 永远上传队列顶部的文件
+    nextFile = scope.files[0]
+    console.log 'uploading '+nextFile.name
     ((file)->
       post_data = 
         file_name: file.name
@@ -457,9 +466,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         xhr.addEventListener "load", uploadComplete, false
         xhr.addEventListener "error", uploadFailed, false
         xhr.addEventListener "abort", uploadCanceled, false
-        console.log res
+        # console.log res
         fd = new FormData()
-        scope.currentUploadingFile = scope.files[myData.upload_count].name
+        scope.currentUploadingFile = nextFile.name
         fd.append "file", file
         fd.append 'policy', res.policy
         fd.append 'signature', res.sign
@@ -498,18 +507,14 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     #       console.log err)(file)
       
   uploadComplete = (evt) ->
-    console.log "File: "+scope.files[myData.upload_count].name+' is uploaded.'
+    console.log "File: "+scope.files[0].name+' is uploaded.'
     console.log evt.target.response
-    # 计数加一
-    myData.upload_count += 1
-    # 要是当前计数还没达到队列长度，就再上传
-    # = --> 不传
-    # < --> 不传
-    # > ---> 传！
-    if scope.files.length > myData.upload_count
+    # 把队列顶部的文件去掉，因为它已经传完了
+    scope.files.splice(0, 1)
+    # 要是当前文件队列计数大于0
+    if scope.files.length > 0
       uploadFile()
     else
-      delete(myData.upload_count)
       scope.progressVisible = false
       scope.files = []
       # 延迟一会儿再抓取新的文件数据
@@ -528,17 +533,15 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       if evt.lengthComputable
         scope.progress = Math.round(evt.loaded * 100 / evt.total)
       else
-        scope.progress = "unable to compute"
+        scope.progress = "unable to compute progress"
 
   uploadFailed = (evt) ->
-    alert "There was an error attempting to upload the file."
+    alert "An error occured while uploading the file."
 
   uploadCanceled = (evt) ->
     scope.$apply ->
       scope.progressVisible = false
     alert "The upload has been canceled by the user or the browser dropped the connection."
-
-
 
 
 

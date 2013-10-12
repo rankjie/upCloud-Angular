@@ -57,6 +57,11 @@
 
       <!-- 展示需要上传的文件 -->
       <div ng-show="files.length">
+        <!-- 进度条 -->
+        <div class="progress large-12 second" ng-show="progressVisible">
+          <span class="meter" ng-style="{'width': progress+'%'}">{{progress}}%</span>
+        </div>
+
         <div ng-repeat="file in files.slice(0)">
           <span>{{file.webkitRelativePath || file.name}}</span>
           (<span ng-switch="file.size > 1024*1024">
@@ -65,11 +70,13 @@
             </span>)
         </div>
 
-        <input ng-show="!progressVisible" type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/>
+        <!-- 显示上传按钮 -->
+        <!-- <input ng-show="!progressVisible" type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton"/> -->
 
-        <div class="progress large-12 second" ng-show="progressVisible">
-          <span class="meter" ng-style="{'width': progress+'%'}">{{progress}}% -- {{currentUploadingFile.name}}</span>
-        </div>
+        <!-- 自动上传，不用按钮确认了 -->
+        <input type="button" ng-click="uploadFile()" value="Upload" class="small button" id="uploadButton" style="display:none"/>
+
+        
 
 
 
