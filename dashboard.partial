@@ -97,12 +97,12 @@
       <div id='NewDirBlock' style="display:inline-block;" >
         <form>
           <!--         当前目录共有文件/文件夹：{{current_dir_content.length}} -->
-          <span><input style="width:150px; display:inline-block;" type='text' ng-model='new_dir_name' onkeydown="if (event.keyCode == 13) $('#createDirButton').click()" placeholder='new directory..'/>
+          <span><input style="width:150px; display:inline-block;" type='text' ng-model='new_dir_name' onkeydown="if (event.keyCode == 13) $('#createDirButton').click()" placeholder='创建文件夹...'/>
           <input ng-hide='true' id="createDirButton" type='submit' class='small secondary button' ng-click="createDir()" value='创建文件夹'/></span>
         </form>
       </div>
       <div id="SortButtonBlock" style="display:inline-block; height:100%" ng-switch="switcher.inbin">
-        <a class="small secondary button dropdown" data-dropdown="drop1">排列顺序</a>
+        <a class="small button dropdown" data-dropdown="drop1"><i class="icon-sort"></i>&nbsp;排列顺序</a>
         <ul id="drop1" class="f-dropdown" data-dropdown-content>
           <li><a ng-click="predicate = 'type'; reverse=false "><i class="icon-file"></i>&nbsp;目录在前</a></li>
           <li><a ng-click="predicate = '-type'; reverse=false"><i class="icon-folder-close"></i>&nbsp;文件在前</a></li>
@@ -110,16 +110,17 @@
           <li><a ng-click="predicate = 'bucket'; reverse=!reverse"><i class="icon-info-sign"></i>&nbsp;文件类型</a></li>
           <li><a ng-click="predicate = 'updated_at'; reverse=!reverse"><i class="icon-time"></i>&nbsp;修改时间</a></li>
         </ul>
-        <a ng-switch-when="false" class="small secondary button" ng-click="switcherClick()"><i class="icon-trash"></i>&nbsp;显示回收站</a>
-        <a ng-switch-when="true" class="small secondary button" ng-click="switcherClick()"><i class="icon-reply"></i>&nbsp;返回</a>
+        <a ng-switch-when="false" class="small button trashButton" ng-click="switcherClick()" data-action='trash'><i class="icon-trash"></i>&nbsp;回收站</a>
+        <a ng-switch-when="true" class="small button trashButton" ng-click="switcherClick()" data-action='recover'><i class="icon-reply"></i>&nbsp;返回</a>
+        <a ng-hide="{{inRootDir}}" href=./{{current_parent_dir_id}} class="small button droppableButton" data-item_id="{{current_parent_dir_id}}" data-item_type="dir"><i class ="icon-backward"></i>&nbsp;上级目录</a>
+        <a ng-hide="{{inRootDir}}" href=./0 class="small button droppableButton" data-item_id="0" data-item_type="dir"><i class ="icon-fast-backward"></i>&nbsp;根目录</a>
       </div>
     </div>
 
     <div ng-repeat="file in current_dir_content | orderBy:predicate:reverse" class='item' ng-switch="file.type === 'dir'" id="item_{{file.id}}" draggable="true">
       <div  class="DeleteButtonBlock" draggable="false">
         <i ng-switch-when="false" class="icon-share ItemButton" ng-click="showShareFileModal(file)" ng-hide="switcher.inbin"><br></i>
-        <i class="icon-edit ItemButton" ng-click="editItem(file)"></i><br>
-        <!-- <i class="icon-remove ItemButton" ng-click="showDeleteItemModal(file)" ng-hide="switcher.inbin"></i> -->
+        <i class="icon-edit ItemButton" ng-click="showEditItemModal(file)"></i><br>
         <i class="icon-trash ItemButton" ng-click="showDeleteItemModal(file)"></i>
       </div>
       <!-- file -->
@@ -130,24 +131,53 @@
           {{file.name}}</a>
       <!-- dir -->
       <a ng-switch-when="true" data-item_id='{{file.id}}' data-item_type='{{file.type}}'
-          href={{current_url_without_dir_id}}/{{file.id}} draggable="false">
+          href=./{{file.id}} draggable="false">
           <img ng-src="{{file.previewPic}}" draggable="false">
           <br>
           {{file.name}}</a>
       <br>
-      <small class="subheader">{{file.updated_at}}</small>
+      <small class="subheader" style="font-size:10.5px" >{{file.updated_at}}</small>
     </div>
     
   </div>
 
 
+
+
+  <!-- 修改文件/目录（名称） -->
+  <div id="EditItemModal" class="reveal-modal small">
+    <div class="small-4 columns">
+      <center>
+        <img src="{{itemEdit.previewPic}}">
+        <h6 style="word-wrap: break-word;">{{itemEdit.name}}</h6>
+      </center>
+    </div>
+    <div class="small-8 columns">
+      <div class="row collapse">
+        <h5 class="subheader">修改名称：</h5>
+        <div class="small-9 columns">
+          <input type="text" ng-model="itemNewName" placeholder="{{itemEdit.foreName}}" onkeydown="if (event.keyCode == 13) $('#itemChangeButton').click()">
+        </div>
+        <div class="small-3 columns" ng-show="itemEdit.type === 'file'">
+          <span class="postfix">.{{itemEdit.extension}}</span>
+        </div>
+      </div>
+      <button ng-hide="true" ng-click="itemChange(itemEdit.type, itemEdit.id, itemNewName)" id="itemChangeButton"></button>
+    </div>
+    <a class="close-reveal-modal">&#215;</a>
+  </div>
+
+
+
+
+
   <!-- 群组管理的弹窗 -->
   <div id="GroupModal" class="reveal-modal">
-    <h2 class="subheader"><span ng-click="changeGroupName(groupInfo)">{{groupInfo.name}} <small>(点击修改)</small></span>&nbsp;&nbsp;&nbsp;<small>owner: {{groupInfo.owner.email}}</small></h2>
+    <h2 class="subheader">
+      <span ng-click="changeGroupName(groupInfo)">{{groupInfo.name}}<small>(点击修改)</small></span>&nbsp;&nbsp;&nbsp;
+      <small>owner: {{groupInfo.owner.email}}</small>
+    </h2>
     
-    <div class="row">
-
-
       <div class="small-6 columns MemberInfoDiv">
         <p class="lead">普通成员:</p>
         <div class="row">
@@ -183,16 +213,15 @@
         </div>
       </div>
 
-
-    </div>
     <a class="close-reveal-modal">&#215;</a>
   </div>
 
 
-  <!-- 设置文件的弹窗 -->
+  <!-- 分享文件的弹窗 -->
   <div id="ShareFileModal" class="reveal-modal">
     <center>
-      <h2 style="word-wrap: break-word;">{{fileInfo.name}} </h2>
+      <!-- <h2 style="word-wrap: break-word; color: #7f8c8d;">{{fileInfo.name}} </h2> -->
+      <h2 class="subheader">{{fileInfo.name}}</h2>
       <span class="button small second" ng-disabled='fileChanging' ng-click='changeFilePrivate(fileInfo)'>{{fileInfo.shareInfo}}</span>
       <h2><a class="fileLink" ng-hide="fileInfo.private" href="{{fileInfo.shareLink}}" style="width:100%">{{fileInfo.shareLink}}</a><h2>
     </center>
@@ -207,21 +236,33 @@
 
 
   <div id="DeleteItemModal" class="reveal-modal small" ng-switch="itemInfo.status === 'trashed'">
-    <img ng-src="{{itemInfo.previewPic}}">
-    <h2 style="word-wrap: break-word;">{{itemInfo.name}}</h2>
-    <div ng-switch-when="false">
-      <h5 class="subheader">要丢进回收站...还是彻底删除？</h5>
-      <a class="small button" ng-click="deleteItem(itemInfo, 'trash')">丢进回收站</a></li>
-      <a class="small alert button"     ng-click="deleteItem(itemInfo, 'remove')">彻底删除</a></li>
+    <div class="small-4 columns">
+      <center>
+        <img ng-src="{{itemInfo.previewPic}}">
+        <h6 style="word-wrap: break-word;">{{itemInfo.name}}</h6>
+      </center>
     </div>
 
-    <div ng-switch-when="true">
+    <div class="small-8 columns" ng-switch-when="false">
+      <h5 class="subheader">要丢进回收站...还是彻底删除？</h5>
+      <div class="small-6 columns">
+        <button class="small button" ng-click="deleteItem(itemInfo.type, itemInfo.id, 'trash')">丢回收站</button>
+      </div>
+      <div class="small-6 columns">
+        <button class="small alert button"     ng-click="deleteItem(itemInfo.type, itemInfo.id, 'remove')">彻底删除</button>
+      </div>
+    </div>
+
+    <div class="small-8 columns" ng-switch-when="true">
       <h5 class="subheader">要从回收站中恢复...还是彻底删除？</h5>
-      <a class="small success button" ng-click="recoverItem(itemInfo)">恢复到原处</a>
-      <a class="small alert button" ng-click="deleteItem(itemInfo, 'remove')">彻底删除</a>
+      <div class="small-6 columns">
+        <a class="small success button" ng-click="recoverItem(itemInfo.type, itemInfo.id)">恢复原处</a>
+      </div>
+      <div class="small-6 columns">
+        <a class="small alert button" ng-click="deleteItem(itemInfo.type, itemInfo.id, 'remove')">彻底删除</a>
+      </div>
     </div>
     <a class="close-reveal-modal">&#215;</a>
-
   </div>
 
 

@@ -214,7 +214,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         console.log 'redirect to your own dashboard... '
         $location.path(dashboardURL+ '/' + myData.user_id + '/0')
         $scope.$apply()
-      $scope.current_url_without_dir_id = dashboardURL + '/' + myData.user_id
       getCurrentDirContent()
       getGroupList()
     else
@@ -228,6 +227,31 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   scope = $scope
 
+  scope.inRootDir = if Number($routeParams.dir_id) is 0 then true else false
+
+  getParentDirID = (dir_id)->
+    deferred = Q.defer()
+    # if myData.parentDir?
+    #   deferred.resolve myData.parentDir
+    # else
+    api_point = baseURL + '/api/dirs/' + dir_id + '/parent'
+    $http.get(api_point)
+    .success (parentDir)->
+      deferred.resolve if $routeParams.group_id? then parentDir.group_parent_directory_id else parentDir.parent_directory_id
+    .error (err)->
+      deferred.reject err
+    return deferred.promise
+
+  if Number($routeParams.dir_id) is 0
+    scope.current_parent_dir_id = 0
+  else
+    getParentDirID($routeParams.dir_id)
+    .then (dir_id)->
+      console.log dir_id
+      scope.current_parent_dir_id = dir_id
+    , (err)->
+      console.log err
+      scope.current_parent_dir_id = $routeParams.dir_id
 
   getTime = (raw_date)->
     d = new Date(raw_date)
@@ -424,8 +448,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       deferred.reject err
     return deferred.promise
 
-  testDrop = (evt, ui)->
-    console.log '!!!!!!!!!!droped !!!!!!!!!!!!!!!!'
+  testDrop = (evt)->
     evt.originalEvent.stopPropagation()
     evt.originalEvent.preventDefault()
 
@@ -453,6 +476,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     # 暂时先不增加创建版本的功能，只做移动目录
     # 还可以增加： 拖到上进目录、拖到根目录、拖到回收站的功能，drag触发的时候更改回收站按钮的文字，显示拖到根目录和上级目录的区域
     if dropped_item.item_id isnt dragged_item.item_id and dropped_item.item_type is 'dir'
+      console.log dragged_item
+      console.log dropped_item
       changeParentDir(dragged_item, dropped_item.item_id)
       .then (result)->
         console.log result
@@ -461,11 +486,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         console.log err
         alert err.message
 
-
   testOver = (evt)->
     evt.originalEvent.stopPropagation()
     evt.originalEvent.preventDefault()
-    console.log 'over!!!!'
 
   itemDrag = (evt)->
     theItem = $(this).children()[1]
@@ -473,12 +496,30 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       item_id: theItem.dataset.item_id
       item_type: theItem.dataset.item_type
     evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo))
+    console.log 'start'
 
   itemDragEnd = (evt)->
     console.log 'end!'
 
-  droppableItem = $(".item")
+  trashOrRecover = (evt)->
+    evt.originalEvent.stopPropagation()
+    evt.originalEvent.preventDefault()
+    item   = JSON.parse(evt.originalEvent.dataTransfer.getData('text'))
+    button = evt.target.dataset
+    action = button.action
 
+    if action is 'recover'
+      console.log 'gonna recover it'
+      scope.recoverItem(item.item_type, item.item_id)
+    else if action is 'trash'
+      console.log 'gonna trash it'
+      scope.deleteItem(item.item_type, item.item_id, 'trash')
+
+
+  droppableItem   = $(".item")
+  droppableButton = $(".droppableButton")
+  trashButton     = $(".trashButton")
+  console.log droppableButton
   # console.log droppableItem
 
 
@@ -486,6 +527,12 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   droppableItem.live('drop', testDrop)
   droppableItem.live('dragstart', itemDrag)
   droppableItem.live('dragend', itemDragEnd)
+
+  droppableButton.live('dragover', testOver)
+  droppableButton.live('drop', testDrop)
+
+  trashButton.live('dragover', testOver)
+  trashButton.live('drop', trashOrRecover)
 
 
   # # 丢在某文件or文件夹上的时候
@@ -705,9 +752,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     scope.new_group_name = ''
 
   # trash文件or文件夹
-  scope.deleteItem = (item, action)->
+  scope.deleteItem = (item_type, item_id, action)->
     console.log action
-    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}/#{action}"
+    api_point = "#{baseURL}/api/#{item_type}s/#{item_id}/#{action}"
     # console.log api_point
     $http.delete(api_point)
     .success (res)->
@@ -721,9 +768,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
       $('#DeleteItemModal').foundation('reveal', 'close')
 
-  scope.recoverItem = (item)->
+  scope.recoverItem = (item_type, item_id)->
     # 直接edit status？ good
-    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
+    api_point = "#{baseURL}/api/#{item_type}s/#{item_id}"
     $http.put(api_point, {new_status: 'uploaded'})
     .success (result)->
       console.log result
@@ -741,16 +788,14 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   # 修改文件/文件夹
   scope.editItem = (item)->
-    new_name = prompt('new name')
-    if new_name isnt '' and new_name?
-      api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
-      $http.put(api_point, {new_name: new_name})
-      .success (result)->
-        console.log result
-        console.log scope.switcher.inbin
-        if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
-      .error (err)->
-        console.log err
+    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
+    $http.put(api_point, {new_name: new_name})
+    .success (result)->
+      console.log result
+      console.log scope.switcher.inbin
+      if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
+    .error (err)->
+      console.log err
 
   # 获取群组信息
   getGroupInfo = (group)->
@@ -913,7 +958,12 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.fileChanging = false
 
 
-
+  scope.showEditItemModal = (item)->
+    scope.itemEdit = item
+    nameArray = item.name.split('.')
+    scope.itemEdit.extension = nameArray.pop()
+    scope.itemEdit.foreName = if item.type is 'file' then nameArray.join('') else item.name
+    $('#EditItemModal').foundation('reveal', 'open')
 
 
   scope.showEditUserModal = (user)->

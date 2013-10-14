@@ -185,7 +185,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, changeMember, changeParentDir, dragEnterLeave, dragOver, dropbox, droppableItem, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, itemDrag, itemDragEnd, scope, testDrop, testOver, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
+  var boxDrop, changeMember, changeParentDir, dragEnterLeave, dragOver, dropbox, droppableButton, droppableItem, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getParentDirID, getTime, getTrashedContent, itemDrag, itemDragEnd, scope, testDrop, testOver, trashButton, trashOrRecover, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
   isLogin($http, myData).then(function(logged_in) {
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
@@ -193,7 +193,6 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         $location.path(dashboardURL + '/' + myData.user_id + '/0');
         $scope.$apply();
       }
-      $scope.current_url_without_dir_id = dashboardURL + '/' + myData.user_id;
       getCurrentDirContent();
       return getGroupList();
     } else {
@@ -205,6 +204,29 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     return console.log(err);
   });
   scope = $scope;
+  scope.inRootDir = Number($routeParams.dir_id) === 0 ? true : false;
+  getParentDirID = function(dir_id) {
+    var api_point, deferred;
+    deferred = Q.defer();
+    api_point = baseURL + '/api/dirs/' + dir_id + '/parent';
+    $http.get(api_point).success(function(parentDir) {
+      return deferred.resolve($routeParams.group_id != null ? parentDir.group_parent_directory_id : parentDir.parent_directory_id);
+    }).error(function(err) {
+      return deferred.reject(err);
+    });
+    return deferred.promise;
+  };
+  if (Number($routeParams.dir_id) === 0) {
+    scope.current_parent_dir_id = 0;
+  } else {
+    getParentDirID($routeParams.dir_id).then(function(dir_id) {
+      console.log(dir_id);
+      return scope.current_parent_dir_id = dir_id;
+    }, function(err) {
+      console.log(err);
+      return scope.current_parent_dir_id = $routeParams.dir_id;
+    });
+  }
   getTime = function(raw_date) {
     var d;
     d = new Date(raw_date);
@@ -391,9 +413,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     });
     return deferred.promise;
   };
-  testDrop = function(evt, ui) {
+  testDrop = function(evt) {
     var dragged_item, dropped, dropped_item;
-    console.log('!!!!!!!!!!droped !!!!!!!!!!!!!!!!');
     evt.originalEvent.stopPropagation();
     evt.originalEvent.preventDefault();
     dropped = evt.target;
@@ -412,6 +433,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         dropped_item = dropped.children[1].dataset;
     }
     if (dropped_item.item_id !== dragged_item.item_id && dropped_item.item_type === 'dir') {
+      console.log(dragged_item);
+      console.log(dropped_item);
       return changeParentDir(dragged_item, dropped_item.item_id).then(function(result) {
         console.log(result);
         if (scope.switcher.inbin) {
@@ -427,8 +450,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
   };
   testOver = function(evt) {
     evt.originalEvent.stopPropagation();
-    evt.originalEvent.preventDefault();
-    return console.log('over!!!!');
+    return evt.originalEvent.preventDefault();
   };
   itemDrag = function(evt) {
     var iteminfo, theItem;
@@ -437,16 +459,39 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       item_id: theItem.dataset.item_id,
       item_type: theItem.dataset.item_type
     };
-    return evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo));
+    evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo));
+    return console.log('start');
   };
   itemDragEnd = function(evt) {
     return console.log('end!');
   };
+  trashOrRecover = function(evt) {
+    var action, button, item;
+    evt.originalEvent.stopPropagation();
+    evt.originalEvent.preventDefault();
+    item = JSON.parse(evt.originalEvent.dataTransfer.getData('text'));
+    button = evt.target.dataset;
+    action = button.action;
+    if (action === 'recover') {
+      console.log('gonna recover it');
+      return scope.recoverItem(item.item_type, item.item_id);
+    } else if (action === 'trash') {
+      console.log('gonna trash it');
+      return scope.deleteItem(item.item_type, item.item_id, 'trash');
+    }
+  };
   droppableItem = $(".item");
+  droppableButton = $(".droppableButton");
+  trashButton = $(".trashButton");
+  console.log(droppableButton);
   droppableItem.live('dragover', testOver);
   droppableItem.live('drop', testDrop);
   droppableItem.live('dragstart', itemDrag);
   droppableItem.live('dragend', itemDragEnd);
+  droppableButton.live('dragover', testOver);
+  droppableButton.live('drop', testDrop);
+  trashButton.live('dragover', testOver);
+  trashButton.live('drop', trashOrRecover);
   dropbox = document.getElementById("dropbox");
   dropbox.addEventListener("dragenter", dragEnterLeave, false);
   dropbox.addEventListener("dragleave", dragEnterLeave, false);
@@ -573,10 +618,10 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     }
     return scope.new_group_name = '';
   };
-  scope.deleteItem = function(item, action) {
+  scope.deleteItem = function(item_type, item_id, action) {
     var api_point;
     console.log(action);
-    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id + "/" + action;
+    api_point = "" + baseURL + "/api/" + item_type + "s/" + item_id + "/" + action;
     return $http["delete"](api_point).success(function(res) {
       console.log(res);
       if (scope.switcher.inbin) {
@@ -595,9 +640,9 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       return $('#DeleteItemModal').foundation('reveal', 'close');
     });
   };
-  scope.recoverItem = function(item) {
+  scope.recoverItem = function(item_type, item_id) {
     var api_point;
-    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
+    api_point = "" + baseURL + "/api/" + item_type + "s/" + item_id;
     return $http.put(api_point, {
       new_status: 'uploaded'
     }).success(function(result) {
@@ -614,24 +659,21 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     return $('#DeleteItemModal').foundation('reveal', 'open');
   };
   scope.editItem = function(item) {
-    var api_point, new_name;
-    new_name = prompt('new name');
-    if (new_name !== '' && (new_name != null)) {
-      api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
-      return $http.put(api_point, {
-        new_name: new_name
-      }).success(function(result) {
-        console.log(result);
-        console.log(scope.switcher.inbin);
-        if (scope.switcher.inbin) {
-          return getTrashedContent();
-        } else {
-          return getCurrentDirContent();
-        }
-      }).error(function(err) {
-        return console.log(err);
-      });
-    }
+    var api_point;
+    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
+    return $http.put(api_point, {
+      new_name: new_name
+    }).success(function(result) {
+      console.log(result);
+      console.log(scope.switcher.inbin);
+      if (scope.switcher.inbin) {
+        return getTrashedContent();
+      } else {
+        return getCurrentDirContent();
+      }
+    }).error(function(err) {
+      return console.log(err);
+    });
   };
   getGroupInfo = function(group) {
     var api_point;
@@ -797,6 +839,14 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       updateFileModal(file);
       return scope.fileChanging = false;
     });
+  };
+  scope.showEditItemModal = function(item) {
+    var nameArray;
+    scope.itemEdit = item;
+    nameArray = item.name.split('.');
+    scope.itemEdit.extension = nameArray.pop();
+    scope.itemEdit.foreName = item.type === 'file' ? nameArray.join('') : item.name;
+    return $('#EditItemModal').foundation('reveal', 'open');
   };
   return scope.showEditUserModal = function(user) {
     scope.userInfo = user;
