@@ -8,9 +8,14 @@
     <!-- 群组、我的文件，导航栏 -->
     <div id="navBlock">
       <ul class="side-nav">
-        <li>
-          <a href='/dashboard'><i class="icon-user"></i>  My Files</a>
-        </li>
+        <div class="User">
+          <div class="UserButtonBlock" style="margin-top:3px">
+            <i class="icon-edit UserButton" ng-click="showEditUserModal()"></i>
+          </div>
+          <li>
+            <a ng-href="{{personalHomePage}}"><i class="icon-user"></i>&nbsp;My Files</a>
+          </li>
+        </div>
         <li class="divider"></li>
         <div class='GroupList' ng-repeat="group in groups" >
           <div class="GroupButtonBlock" style="margin-top:3px">
@@ -19,7 +24,7 @@
           <li ng-class="group.liclass">
             <a class='GroupItem' href=/dashboard/group/{{group.id}}/0>
               <i class="icon-group"></i>
-              {{group.name}}
+              &nbsp;{{group.name}}
             </a>
             <i class="icon-remove {{group.type}}"></i>
             <br>
@@ -162,7 +167,7 @@
           <span class="postfix">.{{itemEdit.extension}}</span>
         </div>
       </div>
-      <button ng-hide="true" ng-click="itemChange(itemEdit.type, itemEdit.id, itemNewName)" id="itemChangeButton"></button>
+      <button ng-hide="true" ng-click="itemChange(itemEdit.type, itemEdit.id, itemNewName, '.'+itemEdit.extension)" id="itemChangeButton"></button>
     </div>
     <a class="close-reveal-modal">&#215;</a>
   </div>
@@ -173,45 +178,52 @@
 
   <!-- 群组管理的弹窗 -->
   <div id="GroupModal" class="reveal-modal">
-    <h2 class="subheader">
-      <span ng-click="changeGroupName(groupInfo)">{{groupInfo.name}}<small>(点击修改)</small></span>&nbsp;&nbsp;&nbsp;
-      <small>owner: {{groupInfo.owner.email}}</small>
-    </h2>
-    
-      <div class="small-6 columns MemberInfoDiv">
-        <p class="lead">普通成员:</p>
-        <div class="row">
-          <div class="small-12 columns">
-            <a class="secondary label group" ng-repeat="user in groupInfo.users"style="margin:2px">
-              {{user.email}}
-              <i class="icon-remove GroupEditButton" ng-click="deleteGroupUser(groupInfo, user.id)"></i>
-            </a>
-          </div>
-          <div class="small-12 columns" style='margin-top:20px'>
-            <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_user' onkeydown="if (event.keyCode == 13) $('#addGroupUserButton').click()"
-            placeholder='添加成员...'/>
-            <input ng-hide='true' id="addGroupUserButton" type='submit' class='small secondary button' ng-click="addGroupUser(groupInfo, new_group_user);new_group_user='';" value='添加成员'/></span>
-          </div>
+    <div class="small-12 columns">
+      <div class="small-10 columns">
+        <h2 class="subheader">
+          <span ng-click="changeGroupName(groupInfo)">{{groupInfo.name}}<small>(点击修改)</small></span>&nbsp;&nbsp;&nbsp;
+          <small>owner: {{groupInfo.owner.email}}</small>
+        </h2>
+      </div>
+      <div class="small-2 columns">
+        <button class="small alert button right" ng-click="deleteGroup(groupInfo.id)">解散</button>
+      </div>
+    </div>
+
+    <div class="small-6 columns MemberInfoDiv">
+      <p class="lead">普通成员:</p>
+      <div class="row">
+        <div class="small-12 columns">
+          <a class="secondary label group" ng-repeat="user in groupInfo.users"style="margin:2px">
+            {{user.email}}
+            <i class="icon-remove GroupEditButton" ng-click="deleteGroupUser(groupInfo, user.id)"></i>
+          </a>
+        </div>
+        <div class="small-12 columns" style='margin-top:20px'>
+          <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_user' onkeydown="if (event.keyCode == 13) $('#addGroupUserButton').click()"
+          placeholder='添加成员...'/>
+          <input ng-hide='true' id="addGroupUserButton" type='submit' class='small secondary button' ng-click="addGroupUser(groupInfo, new_group_user);new_group_user='';" value='添加成员'/></span>
         </div>
       </div>
+    </div>
 
 
-      <div class="small-6 columns MemberInfoDiv">
-        <p class="lead">管理员:</p>
-        <div class="row">
-          <div class="small-12 columns">
-            <a class="secondary label" ng-repeat="admin in groupInfo.admins" style="margin:2px">
-              {{admin.email}}
-              <i class="icon-remove GroupEditButton" ng-click="deleteGroupAdmin(groupInfo, admin.id)"></i>
-            </a>
-          </div>
-          <div class="small-12 columns" style='margin-top:20px'>
-            <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_admin' onkeydown="if (event.keyCode == 13) $('#addGroupAdminButton').click()"
-            placeholder='添加管理员...'/>
-            <input ng-hide='true' id="addGroupAdminButton" type='submit' class='small secondary button' ng-click="addGroupAdmin(groupInfo, new_group_admin);new_group_admin='';" value='添加管理员'/></span>
-          </div>
+    <div class="small-6 columns MemberInfoDiv">
+      <p class="lead">管理员:</p>
+      <div class="row">
+        <div class="small-12 columns">
+          <a class="secondary label" ng-repeat="admin in groupInfo.admins" style="margin:2px">
+            {{admin.email}}
+            <i class="icon-remove GroupEditButton" ng-click="deleteGroupAdmin(groupInfo, admin.id)"></i>
+          </a>
+        </div>
+        <div class="small-12 columns" style='margin-top:20px'>
+          <input style="width:100%; display:inline-block;" type='text' ng-model='new_group_admin' onkeydown="if (event.keyCode == 13) $('#addGroupAdminButton').click()"
+          placeholder='添加管理员...'/>
+          <input ng-hide='true' id="addGroupAdminButton" type='submit' class='small secondary button' ng-click="addGroupAdmin(groupInfo, new_group_admin);new_group_admin='';" value='添加管理员'/></span>
         </div>
       </div>
+    </div>
 
     <a class="close-reveal-modal">&#215;</a>
   </div>
@@ -230,7 +242,11 @@
 
   <!-- 修改用户的弹窗，暂时没用... -->
   <div id="UserEditModal" class="reveal-modal small">
-    <p>{{userInfo.email}}</p>
+    <h5>Email:  {{userInfo.email}}</5>
+    <!-- <input style="margin-top:20px" ng-model='new_user_password' type="password" placeholder="新密码..." onkeydown="if (event.keyCode == 13) $('#changeUserPasswordButton').click()"/> -->
+    <input style="margin-top:20px" ng-model='new_user_password' type="password" placeholder="新密码..." onkeydown="if (event.keyCode == 13) $('#changeUserPasswordButton').click();"/>
+    <!-- <button ng-hide="true" ng-click="changeUserPassword(new_user_password)" id="changeUserPasswordButton"></button> -->
+    <button ng-hide="true" ng-click="changeUserPassword(new_user_password)" id="changeUserPasswordButton"></button>
     <a class="close-reveal-modal">&#215;</a>
   </div>
 

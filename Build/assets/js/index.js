@@ -7,15 +7,15 @@ baseURL = arr[0] + '//' + arr[2];
 
 tempURL = "";
 
-indexURL = tempURL + '/';
+indexURL = '/';
 
-homeURL = tempURL + '/home';
+homeURL = '/home';
 
-dashboardURL = tempURL + '/dashboard';
+dashboardURL = '/dashboard';
 
-fileURL = tempURL + '/f';
+fileURL = '/f';
 
-testURL = tempURL + '/test';
+testURL = '/test';
 
 upyunBaseDomain = 'b0.upaiyun.com';
 
@@ -88,9 +88,11 @@ isLogin = function($http, myData) {
       console.log('check login...');
       if (res.user_id === 0) {
         delete myData.user_id;
+        delete myData.user_email;
         return deferred.resolve(false);
       } else {
         myData.user_id = res.user_id;
+        myData.user_email = res.user_email;
         return deferred.resolve(true);
       }
     }).error(function(err) {
@@ -178,7 +180,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
         return goDashBoard(res.id);
       }).error(function(err) {
         console.log(err);
-        return alert(err);
+        return alert(err.message);
       });
     }
   };
@@ -204,6 +206,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     return console.log(err);
   });
   scope = $scope;
+  scope.personalHomePage = dashboardURL + '/' + myData.user_id + '/0';
   scope.inRootDir = Number($routeParams.dir_id) === 0 ? true : false;
   getParentDirID = function(dir_id) {
     var api_point, deferred;
@@ -604,14 +607,14 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
   };
   scope.createGroup = function() {
     var name;
-    if (confirm('You can NOT delete group for now, you sure?')) {
+    if (confirm('You sure?')) {
       console.log('gonna create a group');
       name = scope.new_group_name;
       scope.new_group_name = '';
       $http.post(baseURL + '/api/groups', {
         name: name
       }).success(function(res) {
-        return getGroupList();
+        return $location.path(dashboardURL + '/group/' + res.id + '/0');
       }).error(function(err) {
         return console.log(err);
       });
@@ -658,21 +661,23 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     scope.itemInfo = item;
     return $('#DeleteItemModal').foundation('reveal', 'open');
   };
-  scope.editItem = function(item) {
-    var api_point;
-    api_point = "" + baseURL + "/api/" + item.type + "s/" + item.id;
+  scope.itemChange = function(item_type, item_id, new_forename, extension) {
+    var api_point, new_name;
+    api_point = "" + baseURL + "/api/" + item_type + "s/" + item_id;
+    new_name = item_type === 'file' ? new_forename + extension : new_forename;
     return $http.put(api_point, {
       new_name: new_name
     }).success(function(result) {
       console.log(result);
-      console.log(scope.switcher.inbin);
       if (scope.switcher.inbin) {
-        return getTrashedContent();
+        getTrashedContent();
       } else {
-        return getCurrentDirContent();
+        getCurrentDirContent();
       }
+      return $('#EditItemModal').foundation('reveal', 'close');
     }).error(function(err) {
-      return console.log(err);
+      console.log(err);
+      return alert(err.message);
     });
   };
   getGroupInfo = function(group) {
@@ -740,7 +745,23 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     });
   };
   scope.editGroup = function(group) {};
-  scope.deleteGroup = function(group) {};
+  scope.deleteGroup = function(group_id) {
+    var api_point;
+    if (confirm('sure!?')) {
+      api_point = baseURL + '/api/groups/' + group_id;
+      return $http["delete"](api_point).success(function(result) {
+        $('#GroupModal').foundation('reveal', 'close');
+        if ($location.path() !== '/dashboard/' + myData.user_id + '/0') {
+          return $location.path(dashboardURL + '/' + myData.user_id + '/0');
+        } else {
+          return getGroupList();
+        }
+      }).error(function(err) {
+        console.log(err);
+        return alert(err.message);
+      });
+    }
+  };
   scope.deleteGroupUser = function(group, user_id) {
     return changeMember(group, user_id, 'del_user');
   };
@@ -848,9 +869,26 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     scope.itemEdit.foreName = item.type === 'file' ? nameArray.join('') : item.name;
     return $('#EditItemModal').foundation('reveal', 'open');
   };
-  return scope.showEditUserModal = function(user) {
-    scope.userInfo = user;
+  scope.showEditUserModal = function(user) {
+    console.log(user);
+    scope.userInfo = {
+      id: myData.user_id,
+      email: myData.user_email
+    };
     return $('#UserEditModal').foundation('reveal', 'open');
+  };
+  return scope.changeUserPassword = function(new_password) {
+    var api_point;
+    api_point = baseURL + '/api/users/' + myData.user_id;
+    return $http.put(api_point, {
+      new_password: new_password
+    }).success(function(result) {
+      console.log('password changed successfully.');
+      return $('#UserEditModal').foundation('reveal', 'close');
+    }).error(function(err) {
+      console.log(err);
+      return alert(err.message);
+    });
   };
 };
 

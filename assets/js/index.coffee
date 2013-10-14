@@ -1,3 +1,6 @@
+# todo:
+# 拖动本地文件到目录的时候直接将文件上传到该目录
+
 # baseURL = 'http://localhost:3000'
 # baseURL = location.protocol + "//" + location.hostname + (location.p ":" + location.port) + "/"
 arr = window.location.href.split("/")
@@ -6,11 +9,11 @@ baseURL = arr[0] + '//' + arr[2]
 
 tempURL = ""
 
-indexURL = tempURL+'/'
-homeURL = tempURL+'/home'
-dashboardURL = tempURL+'/dashboard'
-fileURL = tempURL+'/f'
-testURL = tempURL+'/test'
+indexURL = '/'
+homeURL = '/home'
+dashboardURL = '/dashboard'
+fileURL = '/f'
+testURL = '/test'
 
 upyunBaseDomain = 'b0.upaiyun.com'
 
@@ -106,9 +109,11 @@ isLogin = ($http, myData)->
       console.log 'check login...'
       if res.user_id is 0
         delete(myData.user_id)
+        delete(myData.user_email)
         deferred.resolve false
       else
         myData.user_id = res.user_id
+        myData.user_email = res.user_email
         deferred.resolve true
     .error (err)->
       deferred.reject err
@@ -189,7 +194,7 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
         goDashBoard res.id
       .error (err)->
         console.log err
-        alert err
+        alert err.message
 
 
 
@@ -214,6 +219,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         console.log 'redirect to your own dashboard... '
         $location.path(dashboardURL+ '/' + myData.user_id + '/0')
         $scope.$apply()
+
       getCurrentDirContent()
       getGroupList()
     else
@@ -227,6 +233,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   scope = $scope
 
+  scope.personalHomePage = dashboardURL + '/' + myData.user_id + '/0'
   scope.inRootDir = if Number($routeParams.dir_id) is 0 then true else false
 
   getParentDirID = (dir_id)->
@@ -740,13 +747,13 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   # 创建群组
   scope.createGroup = ()->
-    if confirm('You can NOT delete group for now, you sure?')
+    if confirm('You sure?')
       console.log 'gonna create a group'
       name = scope.new_group_name
       scope.new_group_name = ''
       $http.post(baseURL+'/api/groups', {name: name})
       .success (res)->
-        getGroupList()
+        $location.path(dashboardURL+ '/group/' + res.id + '/0')
       .error (err)->
         console.log err
     scope.new_group_name = ''
@@ -784,18 +791,22 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   scope.showDeleteItemModal = (item)->
     scope.itemInfo = item
     $('#DeleteItemModal').foundation('reveal', 'open')
-    
+  
 
   # 修改文件/文件夹
-  scope.editItem = (item)->
-    api_point = "#{baseURL}/api/#{item.type}s/#{item.id}"
+  scope.itemChange = (item_type, item_id, new_forename, extension)->
+    # console.log extension
+    # console.log new_forename
+    api_point = "#{baseURL}/api/#{item_type}s/#{item_id}"
+    new_name = if item_type is 'file' then new_forename + extension else new_forename
     $http.put(api_point, {new_name: new_name})
     .success (result)->
       console.log result
-      console.log scope.switcher.inbin
       if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
+      $('#EditItemModal').foundation('reveal', 'close')
     .error (err)->
       console.log err
+      alert err.message
 
   # 获取群组信息
   getGroupInfo = (group)->
@@ -840,7 +851,19 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   scope.editGroup = (group)->
     
-  scope.deleteGroup = (group)->
+  scope.deleteGroup = (group_id)->
+    if confirm('sure!?')
+      api_point = baseURL+'/api/groups/'+group_id
+      $http.delete(api_point)
+      .success (result)->
+        $('#GroupModal').foundation('reveal', 'close')
+        if $location.path() isnt '/dashboard/'+myData.user_id+'/0'
+          $location.path(dashboardURL+ '/' + myData.user_id + '/0')
+        else
+          getGroupList()
+      .error (err)->
+        console.log err
+        alert err.message
 
   # 删除用户
   scope.deleteGroupUser = (group, user_id)->
@@ -967,9 +990,22 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
   scope.showEditUserModal = (user)->
-    scope.userInfo = user
+    console.log user
+    scope.userInfo = 
+      id   : myData.user_id
+      email: myData.user_email
     $('#UserEditModal').foundation('reveal', 'open')
 
+
+  scope.changeUserPassword = (new_password)->
+    api_point = baseURL+'/api/users/'+myData.user_id
+    $http.put(api_point, {new_password: new_password})
+    .success (result)->
+       console.log 'password changed successfully.'
+       $('#UserEditModal').foundation('reveal', 'close')
+    .error (err)->
+      console.log err
+      alert err.message
 
   ######## #### ##       ######## 
   ##        ##  ##       ##       

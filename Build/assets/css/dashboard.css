@@ -157,31 +157,30 @@ table { border-collapse: collapse; }
 
 
 
-.GroupList {
+.GroupList, .User {
   display: inline-block;
   position: relative;
   width: 100%;
 }
 
-.GroupList:hover .GroupButtonBlock {
+.GroupList:hover .GroupButtonBlock, .User:hover .UserButtonBlock {
   display: block;
 }
-.GroupButtonBlock {
+.GroupButtonBlock, .UserButtonBlock {
   position: absolute;
   right: 0px;
   overflow: auto;
   display: none;
 }
-.GroupButton {
+.GroupButton, .UserButton {
   float: right;
-  margin-left: 3px;
-}
-.GroupButton {
+  /*margin-left: 3px;*/
   color: #95a5a6;
 }
-.GroupButton:hover {
+.GroupButton:hover, .UserButton:hover {
   color: #f39c12;
 }
+
 
 
 .MemberInfoDiv {
