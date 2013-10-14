@@ -207,8 +207,8 @@
 
 
   <div id="DeleteItemModal" class="reveal-modal small" ng-switch="itemInfo.status === 'trashed'">
+    <img ng-src="{{itemInfo.previewPic}}">
     <h2 style="word-wrap: break-word;">{{itemInfo.name}}</h2>
-
     <div ng-switch-when="false">
       <h5 class="subheader">要丢进回收站...还是彻底删除？</h5>
       <a class="small button" ng-click="deleteItem(itemInfo, 'trash')">丢进回收站</a></li>

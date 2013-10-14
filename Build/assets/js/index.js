@@ -185,7 +185,7 @@ Controllers['FormController'] = function($scope, $http, $location, myData) {
 };
 
 Controllers['DashBoardController'] = function($scope, $http, $location, myData, $routeParams) {
-  var boxDrop, changeMember, changeParentDir, dragEnterLeave, dragOver, dropbox, droppableItem, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, itemDrag, scope, testDrop, testOver, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
+  var boxDrop, changeMember, changeParentDir, dragEnterLeave, dragOver, dropbox, droppableItem, getContent, getCurrentDirContent, getGroupInfo, getGroupList, getTime, getTrashedContent, itemDrag, itemDragEnd, scope, testDrop, testOver, updateFileModal, uploadCanceled, uploadComplete, uploadFailed, uploadFile, uploadProgress;
   isLogin($http, myData).then(function(logged_in) {
     if (logged_in) {
       if (($routeParams.user_id != null) && myData.user_id.toString() !== $routeParams.user_id.toString()) {
@@ -247,7 +247,30 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     });
   };
   getContent = function(type) {
-    var api_point, deferred;
+    var api_point, deferred, setIcon;
+    setIcon = function(file) {
+      var fileExtension;
+      fileExtension = file.name.toLowerCase().split('.').pop();
+      file.previewPic = "/assets/pic/genericdoc.png";
+      if (fileExtension === 'jpg' || fileExtension === 'png' || fileExtension === 'gif' || fileExtension === 'bmp' || fileExtension === 'raw' || fileExtension === 'jpeg' || fileExtension === 'webp' || fileExtension === 'ppm' || fileExtension === 'pgm' || fileExtension === 'pbm' || fileExtension === 'pnm' || fileExtension === 'pfm' || fileExtension === 'pam' || fileExtension === 'tiff' || fileExtension === 'exif') {
+        file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
+      }
+      if (fileExtension === 'txt' || fileExtension === 'pdf' || fileExtension === 'rtf' || fileExtension === 'rtfd' || fileExtension === 'doc' || fileExtension === 'docx') {
+        file.previewPic = "/assets/pic/textfile.png";
+      }
+      if (fileExtension === 'mp3' || fileExtension === 'ogg' || fileExtension === 'm4a' || fileExtension === 'aac' || fileExtension === 'wmv' || fileExtension === 'wma' || fileExtension === 'wav') {
+        file.previewPic = "/assets/pic/music.png";
+      }
+      if (fileExtension === 'mp4' || fileExtension === 'mkv' || fileExtension === 'rmvb' || fileExtension === 'avi' || fileExtension === 'mov' || fileExtension === 'mpg' || fileExtension === 'mpeg' || fileExtension === 'flv' || fileExtension === '3gp' || fileExtension === 'asf' || fileExtension === 'f4v' || fileExtension === 'm4v') {
+        file.previewPic = "/assets/pic/video.png";
+      }
+      if (fileExtension === 'eot' || fileExtension === 'svg' || fileExtension === 'ttf' || fileExtension === 'woff' || fileExtension === 'otf') {
+        file.previewPic = "/assets/pic/font.png";
+      }
+      if (file.status === 'uploading') {
+        return file.previewPic = "/assets/pic/fileuploading.png";
+      }
+    };
     console.log('get ' + type + ' content!');
     deferred = Q.defer();
     if ($routeParams.group_id == null) {
@@ -275,11 +298,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       _ref1 = res.files;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         file = _ref1[_j];
-        if (isPic(file)) {
-          file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
-        } else {
-          file.previewPic = "/assets/pic/file.png";
-        }
+        setIcon(file);
         file.created_at = getTime(file.created_at);
         file.updated_at = getTime(file.updated_at);
         if (type === 'normal') {
@@ -420,10 +439,14 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
     };
     return evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo));
   };
+  itemDragEnd = function(evt) {
+    return console.log('end!');
+  };
   droppableItem = $(".item");
   droppableItem.live('dragover', testOver);
   droppableItem.live('drop', testDrop);
   droppableItem.live('dragstart', itemDrag);
+  droppableItem.live('dragend', itemDragEnd);
   dropbox = document.getElementById("dropbox");
   dropbox.addEventListener("dragenter", dragEnterLeave, false);
   dropbox.addEventListener("dragleave", dragEnterLeave, false);

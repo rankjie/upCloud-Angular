@@ -266,6 +266,24 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.groups = res.groups
 
   getContent = (type)->
+    setIcon = (file)->
+      fileExtension = file.name.toLowerCase().split('.').pop()
+      # 默认的文件
+      file.previewPic = "/assets/pic/genericdoc.png"
+      # 图片的
+      file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" if fileExtension in ['jpg', 'png', 'gif', 'bmp', 'raw', 'jpeg', 'webp', 'ppm', 'pgm', 'pbm', 'pnm', 'pfm', 'pam', 'tiff', 'exif']
+      # 文本文件的
+      file.previewPic = "/assets/pic/textfile.png" if fileExtension in ['txt', 'pdf', 'rtf', 'rtfd', 'doc', 'docx']
+      # 音频的
+      file.previewPic = "/assets/pic/music.png" if fileExtension in ['mp3', 'ogg', 'm4a', 'aac', 'wmv', 'wma', 'wav']
+      # 影视的
+      file.previewPic = "/assets/pic/video.png" if fileExtension in ['mp4', 'mkv', 'rmvb', 'avi', 'mov', 'mpg', 'mpeg', 'flv', '3gp', 'asf', 'f4v', 'm4v']
+      # 字体的
+      file.previewPic = "/assets/pic/font.png" if fileExtension in ['eot', 'svg', 'ttf', 'woff', 'otf']
+      # 还没收到又拍云通知的
+      file.previewPic = "/assets/pic/fileuploading.png" if file.status is 'uploading'
+
+
     console.log 'get '+type+' content!'
     deferred = Q.defer()
     # 获取用户文件
@@ -287,10 +305,12 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
           content.push dir
 
       for file in res.files
-        if isPic(file)
-          file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" 
-        else
-          file.previewPic = "/assets/pic/file.png"
+        # if isPic(file)
+        #   file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" if file.status is 'uploaded'
+        #   file.previewPic = "/assets/pic/"
+        # else
+        #   file.previewPic = "/assets/pic/file.png"
+        setIcon(file)
         file.created_at = getTime(file.created_at)
         file.updated_at = getTime(file.updated_at)
         if type is 'normal' 
@@ -303,7 +323,6 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       deferred.reject err
 
     return deferred.promise
-
 
 
   scope.switcher = {}
@@ -375,7 +394,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
 
-        #### ######## ######## ##     ##    ########  ########   #######  ########  
+          #### ######## ######## ##     ##    ########  ########   #######  ########  
            ##     ##    ##       ###   ###    ##     ## ##     ## ##     ## ##     ## 
            ##     ##    ##       #### ####    ##     ## ##     ## ##     ## ##     ## 
            ##     ##    ######   ## ### ##    ##     ## ########  ##     ## ########  
@@ -455,6 +474,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       item_type: theItem.dataset.item_type
     evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo))
 
+  itemDragEnd = (evt)->
+    console.log 'end!'
+
   droppableItem = $(".item")
 
   # console.log droppableItem
@@ -463,6 +485,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   droppableItem.live('dragover', testOver)
   droppableItem.live('drop', testDrop)
   droppableItem.live('dragstart', itemDrag)
+  droppableItem.live('dragend', itemDragEnd)
 
 
   # # 丢在某文件or文件夹上的时候
@@ -921,6 +944,8 @@ Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
   .error (err)->
     $scope.file_name = err.message
     console.log err
+
+
 
 upCloud.controller Controllers
 
