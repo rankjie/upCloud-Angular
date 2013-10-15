@@ -772,6 +772,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       $('#DeleteItemModal').foundation('reveal', 'close')
     .error (err)->
       console.log err
+      alert err.message
       if scope.switcher.inbin then getTrashedContent() else getCurrentDirContent()
       $('#DeleteItemModal').foundation('reveal', 'close')
 

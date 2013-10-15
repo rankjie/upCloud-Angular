@@ -635,6 +635,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       return $('#DeleteItemModal').foundation('reveal', 'close');
     }).error(function(err) {
       console.log(err);
+      alert(err.message);
       if (scope.switcher.inbin) {
         getTrashedContent();
       } else {
