@@ -676,19 +676,27 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   uploadComplete = (evt) ->
     console.log "File: "+scope.files[0].name+' is uploaded.'
     console.log evt.target.response
-    # 把队列顶部的文件去掉，因为它已经传完了
-    scope.files.splice(0, 1)
-    # 要是当前文件队列计数大于0
-    if scope.files.length > 0
-      uploadFile()
-    else
-      scope.progressVisible = false
-      scope.files = []
-      # 延迟一会儿再抓取新的文件数据
-      delay = 2*1000
-      setTimeout ()->
-        getCurrentDirContent()
-      , delay
+    # 告诉服务器，已经上传完毕 
+    # （客户端的同步通知=.=）
+    console.log 'gonna tell the server!!!!'
+    $http.post(baseURL+'/api/files/done', evt.target.response)
+    .success (res)->
+      console.log res
+      # 把队列顶部的文件去掉，因为它已经传完了
+      scope.files.splice(0, 1)
+      # 要是当前文件队列计数大于0
+      if scope.files.length > 0
+        uploadFile()
+      else
+        scope.progressVisible = false
+        scope.files = []
+        # 延迟一会儿再抓取新的文件数据
+        delay = 2*1000
+        setTimeout ()->
+          getCurrentDirContent()
+        , delay
+    .error (err)->
+      console.log err
       
 
     # scope.current_dir_content.push 
