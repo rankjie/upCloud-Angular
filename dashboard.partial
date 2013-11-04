@@ -130,7 +130,7 @@
       </div>
       <!-- file -->
       <a ng-switch-when="false" data-item_id='{{file.id}}' data-item_type='{{file.type}}'
-          href=http://localhost:3000/f/{{file.id}} draggable="false">
+          href=/f/{{file.id}} draggable="false">
           <img ng-src="{{file.previewPic}}" draggable="false">
           <br>
           {{file.name}}</a>
@@ -235,7 +235,7 @@
       <!-- <h2 style="word-wrap: break-word; color: #7f8c8d;">{{fileInfo.name}} </h2> -->
       <h2 class="subheader">{{fileInfo.name}}</h2>
       <span class="button small second" ng-disabled='fileChanging' ng-click='changeFilePrivate(fileInfo)'>{{fileInfo.shareInfo}}</span>
-      <h2><a class="fileLink" ng-hide="fileInfo.private" href="{{fileInfo.shareLink}}" style="width:100%">{{fileInfo.shareLink}}</a><h2>
+      <h2><a class="fileLink" ng-hide="fileInfo.private" href="{{fileInfo.shareLink}}" style="width:100%" onclick="$('#ShareFileModal').foundation('reveal', 'close')">{{fileInfo.shareLink}}</a><h2>
     </center>
     <a class="close-reveal-modal">&#215;</a>
   </div>
