@@ -526,10 +526,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   droppableItem   = $(".item")
   droppableButton = $(".droppableButton")
   trashButton     = $(".trashButton")
-  console.log droppableButton
-  # console.log droppableItem
-
-
+  
   droppableItem.live('dragover', testOver)
   droppableItem.live('drop', testDrop)
   droppableItem.live('dragstart', itemDrag)
