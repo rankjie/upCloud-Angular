@@ -130,7 +130,7 @@
       </div>
       <!-- file -->
       <a ng-switch-when="false" data-item_id='{{file.id}}' data-item_type='{{file.type}}'
-          href=http://localhost:3000/f/{{file.id}} draggable="false">
+          href=/f/{{file.id}} draggable="false">
           <img ng-src="{{file.previewPic}}" draggable="false">
           <br>
           {{file.name}}</a>
