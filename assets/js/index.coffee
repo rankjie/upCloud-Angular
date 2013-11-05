@@ -643,15 +643,15 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         xhr.addEventListener "load", uploadComplete, false
         xhr.addEventListener "error", uploadFailed, false
         xhr.addEventListener "abort", uploadCanceled, false
-        # console.log res
         fd = new FormData()
         scope.currentUploadingFile = nextFile.name
         fd.append "file", file
         fd.append 'policy', res.policy
         fd.append 'signature', res.sign
-        xhr.open "POST", "http://v0.api.upyun.com/"+res.bucket
-        scope.progressVisible = true
+        uploadPoint = "http://v0.api.upyun.com/"+res.bucket
+        xhr.open "POST", uploadPoint, true
         xhr.send fd
+        scope.progressVisible = true
       .error (err)->
         console.log err)(nextFile)
 
@@ -720,15 +720,14 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       else
         scope.progress = "unable to compute progress"
 
-  uploadFailed = (evt) ->
+  uploadFailed = () ->
+    console.log arguments
     alert "An error occured while uploading the file."
 
   uploadCanceled = (evt) ->
     scope.$apply ->
       scope.progressVisible = false
     alert "The upload has been canceled by the user or the browser dropped the connection."
-
-
 
      ######  ########  ########    ###    ######## ######## 
     ##    ## ##     ## ##         ## ##      ##    ##       

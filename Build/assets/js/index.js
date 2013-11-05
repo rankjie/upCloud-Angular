@@ -540,7 +540,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         post_data.parent_directory_id = $routeParams.dir_id;
       }
       return $http.post(baseURL + '/api/files', post_data).success(function(res) {
-        var fd, xhr;
+        var fd, uploadPoint, xhr;
         xhr = new XMLHttpRequest();
         xhr.upload.addEventListener("progress", uploadProgress, false);
         xhr.addEventListener("load", uploadComplete, false);
@@ -551,9 +551,10 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
         fd.append("file", file);
         fd.append('policy', res.policy);
         fd.append('signature', res.sign);
-        xhr.open("POST", "http://v0.api.upyun.com/" + res.bucket);
-        scope.progressVisible = true;
-        return xhr.send(fd);
+        uploadPoint = "http://v0.api.upyun.com/" + res.bucket;
+        xhr.open("POST", uploadPoint, true);
+        xhr.send(fd);
+        return scope.progressVisible = true;
       }).error(function(err) {
         return console.log(err);
       });
@@ -591,7 +592,8 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       }
     });
   };
-  uploadFailed = function(evt) {
+  uploadFailed = function() {
+    console.log(arguments);
     return alert("An error occured while uploading the file.");
   };
   uploadCanceled = function(evt) {
