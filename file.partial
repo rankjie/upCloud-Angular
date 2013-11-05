@@ -1,6 +1,6 @@
 <div class="row" ng-controller='FileController' ng-init="file_name = '正在获取下载链接'; file_link = '#'; isPic = 'false'">
   <center>
-    <p><a ng-href={{file_link}}><i class="icon-cloud-download icon-5" style="font-size:12em"></i></a></p>
+    <p><a ng-href={{file_link}} onclick="$('#FileNameSuggestionModal').foundation('reveal','open')"><i class="icon-cloud-download icon-5" style="font-size:12em"></i></a></p>
     <h3 class="subheader">{{file_name}}</h3>
   </center>
   <div id='PicPreview' ng-show='isPic'>
@@ -14,4 +14,10 @@
       <center><img src={{file_pic_link}}{{size}}></center>
     </div>
   </div>
+  <div id="FileNameSuggestionModal" class="reveal-modal small">
+    <h2>建议将文件命更改为：
+    <input class='subheader center' value="{{file_name}}" style="text-align: center" /></h2>
+    <a class="close-reveal-modal">&#215;</a>
+  </div>
 </div>
+
