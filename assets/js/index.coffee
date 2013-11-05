@@ -404,6 +404,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     evt.preventDefault()
     files = evt.dataTransfer.files
     scope.dropClass = ""
+    console.log 'gonna start upload!!!', files.length
     if files.length > 0
       # scope.$apply ->
       if not scope.files? or scope.files.length is 0
@@ -601,16 +602,25 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   
 
   scope.setFiles = (element) ->
-    scope.$apply (scope) ->
-      console.log "files:", element.files
-      scope.files ?= []
+    if element.files.length > 0
+      console.log 'files were selected. ', element.files.length
+      # 要是当前scope.files为空，那就要产生上传的动作
+      if not scope.files? or scope.files.length is 0
+        console.log 'no file was uploading~'
+        autoUpload = true
+        scope.files = []
+      else 
+        # 已经有文件在scope.files里了，那就说明已经在进行上传了，那就不用触发上传动作
+        console.log 'okay... just insert into the list'
+        autoUpload = false
+
       for file in element.files
         scope.files.push file
-      # i = 0
-      # while i < element.files.length
-      #   scope.files.push element.files[i]
-      #   i++
-      scope.progressVisible = false
+
+      $('#uploadButton').click() if autoUpload
+
+    else
+      console.log 'no files were selected.'
 
 
   uploadFile = ()->

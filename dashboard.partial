@@ -45,7 +45,6 @@
 <!--     <hr> -->
     <!-- 传文件的部分 -->
     <div class="fileBlock" >
-
       <!-- 按钮选择文件 -->
       <div class="row show-for-small" style="text-align: center;">
         <label id='uplabel' class="small button" for="fileToUpload">上传文件</label><br/>
