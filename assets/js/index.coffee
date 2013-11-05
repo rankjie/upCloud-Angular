@@ -1034,15 +1034,17 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
 Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
-  console.log fileURL+'/:file_id'
   file_id = $routeParams.file_id
-  console.log baseURL+'/api/files/'+file_id+'/link'
   $http.get(baseURL+'/api/files/'+file_id+'/link')
   .success (file)->
     $scope.file_link = file.link
     $scope.file_name = file.name
-    $scope.isPic = true if isPic(file)
-    console.log file
+    if isPic(file)
+      $scope.isPic = true
+      $scope.file_pic_link = file.link
+      $scope.size = '_large'
+    else
+      $scope.size = ''
   .error (err)->
     $scope.file_name = err.message
     console.log err

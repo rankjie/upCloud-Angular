@@ -1,4 +1,4 @@
-<div class="row" ng-controller='FileController' ng-init="file_name = '正在获取下载链接'; file_link = '#'; isPic = 'false'; size='large'">
+<div class="row" ng-controller='FileController' ng-init="file_name = '正在获取下载链接'; file_link = '#'; isPic = 'false'">
   <center>
     <p><a ng-href={{file_link}}><i class="icon-cloud-download icon-5" style="font-size:12em"></i></a></p>
     <h3 class="subheader">{{file_name}}</h3>
@@ -6,12 +6,12 @@
   <div id='PicPreview' ng-show='isPic'>
     <hr>
     <center >
-      <a class='small secondary button' href="" ng-click="size = 'large'">Large</a>
-      <a class='small secondary button' href="" ng-click="size = 'mid'">Fair</a>
-      <a class='small secondary button' href="" ng-click="size = 'small'">Small</a>
+      <a class='small secondary button' href="" ng-click="size = '_large'">Large</a>
+      <a class='small secondary button' href="" ng-click="size = '_mid'">Fair</a>
+      <a class='small secondary button' href="" ng-click="size = '_small'">Small</a>
     </center>
     <div>
-      <center><img src={{file_link}}_{{size}}></center>
+      <center><img src={{file_pic_link}}{{size}}></center>
     </div>
   </div>
 </div>

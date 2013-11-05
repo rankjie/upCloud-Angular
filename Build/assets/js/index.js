@@ -910,16 +910,17 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
 
 Controllers['FileController'] = function($http, $scope, $routeParams, myData) {
   var file_id;
-  console.log(fileURL + '/:file_id');
   file_id = $routeParams.file_id;
-  console.log(baseURL + '/api/files/' + file_id + '/link');
   return $http.get(baseURL + '/api/files/' + file_id + '/link').success(function(file) {
     $scope.file_link = file.link;
     $scope.file_name = file.name;
     if (isPic(file)) {
       $scope.isPic = true;
+      $scope.file_pic_link = file.link;
+      return $scope.size = '_large';
+    } else {
+      return $scope.size = '';
     }
-    return console.log(file);
   }).error(function(err) {
     $scope.file_name = err.message;
     return console.log(err);
