@@ -280,7 +280,7 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       if (fileExtension === 'jpg' || fileExtension === 'png' || fileExtension === 'gif' || fileExtension === 'bmp' || fileExtension === 'raw' || fileExtension === 'jpeg' || fileExtension === 'webp' || fileExtension === 'ppm' || fileExtension === 'pgm' || fileExtension === 'pbm' || fileExtension === 'pnm' || fileExtension === 'pfm' || fileExtension === 'pam' || fileExtension === 'tiff' || fileExtension === 'exif') {
         file.previewPic = "http://" + file.bucket + "." + upyunBaseDomain + file.uri + "_mid";
       }
-      if (fileExtension === 'txt' || fileExtension === 'pdf' || fileExtension === 'rtf' || fileExtension === 'rtfd' || fileExtension === 'doc' || fileExtension === 'docx') {
+      if (fileExtension === 'txt' || fileExtension === 'pdf' || fileExtension === 'rtf' || fileExtension === 'rtfd' || fileExtension === 'doc' || fileExtension === 'docx' || fileExtension === 'md') {
         file.previewPic = "/assets/pic/textfile.png";
       }
       if (fileExtension === 'mp3' || fileExtension === 'ogg' || fileExtension === 'm4a' || fileExtension === 'aac' || fileExtension === 'wmv' || fileExtension === 'wma' || fileExtension === 'wav') {
@@ -291,6 +291,9 @@ Controllers['DashBoardController'] = function($scope, $http, $location, myData, 
       }
       if (fileExtension === 'eot' || fileExtension === 'svg' || fileExtension === 'ttf' || fileExtension === 'woff' || fileExtension === 'otf') {
         file.previewPic = "/assets/pic/font.png";
+      }
+      if (fileExtension === 'as' || fileExtension === 'bin' || fileExtension === 'bz' || fileExtension === 'bz2' || fileExtension === 'bzip2' || fileExtension === 'cpgz' || fileExtension === 'cpio' || fileExtension === 'gz' || fileExtension === 'hqx' || fileExtension === 'pax' || fileExtension === 'tar' || fileExtension === 'tbz' || fileExtension === 'tbz2' || fileExtension === 'tgz' || fileExtension === 'uu' || fileExtension === 'xip' || fileExtension === 'z' || fileExtension === 'zip' || fileExtension === 'rar') {
+        file.previewPic = "/assets/pic/bah-" + fileExtension + ".png";
       }
       if (file.status === 'uploading') {
         return file.previewPic = "/assets/pic/fileuploading.png";

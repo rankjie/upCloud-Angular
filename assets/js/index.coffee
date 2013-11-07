@@ -304,13 +304,15 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       # 图片的
       file.previewPic = "http://#{file.bucket}.#{upyunBaseDomain}#{file.uri}_mid" if fileExtension in ['jpg', 'png', 'gif', 'bmp', 'raw', 'jpeg', 'webp', 'ppm', 'pgm', 'pbm', 'pnm', 'pfm', 'pam', 'tiff', 'exif']
       # 文本文件的
-      file.previewPic = "/assets/pic/textfile.png" if fileExtension in ['txt', 'pdf', 'rtf', 'rtfd', 'doc', 'docx']
+      file.previewPic = "/assets/pic/textfile.png" if fileExtension in ['txt', 'pdf', 'rtf', 'rtfd', 'doc', 'docx', 'md']
       # 音频的
       file.previewPic = "/assets/pic/music.png" if fileExtension in ['mp3', 'ogg', 'm4a', 'aac', 'wmv', 'wma', 'wav']
       # 影视的
       file.previewPic = "/assets/pic/video.png" if fileExtension in ['mp4', 'mkv', 'rmvb', 'avi', 'mov', 'mpg', 'mpeg', 'flv', '3gp', 'asf', 'f4v', 'm4v']
       # 字体的
       file.previewPic = "/assets/pic/font.png" if fileExtension in ['eot', 'svg', 'ttf', 'woff', 'otf']
+      # 压缩文档的
+      file.previewPic = "/assets/pic/bah-#{fileExtension}.png" if fileExtension in ['as', 'bin', 'bz', 'bz2', 'bzip2', 'cpgz', 'cpio', 'gz', 'hqx', 'pax', 'tar', 'tbz', 'tbz2', 'tgz', 'uu', 'xip', 'z', 'zip', 'rar']
       # 还没收到又拍云通知的
       file.previewPic = "/assets/pic/fileuploading.png" if file.status is 'uploading'
 
