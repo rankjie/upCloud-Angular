@@ -34,13 +34,13 @@ upCloud.config(['$httpProvider', ($httpProvider) ->
 
 
 
-                   ######  ######## ########  ##     ## ####  ######  ########                 
-                  ##    ## ##       ##     ## ##     ##  ##  ##    ## ##                       
-                  ##       ##       ##     ## ##     ##  ##  ##       ##                       
-  ####### #######  ######  ######   ########  ##     ##  ##  ##       ######   ####### ####### 
-                        ## ##       ##   ##    ##   ##   ##  ##       ##                       
-                  ##    ## ##       ##    ##    ## ##    ##  ##    ## ##                       
-                   ######  ######## ##     ##    ###    ####  ######  ########                 
+                   ######  ######## ########  ##     ## ####  ######  ########
+                  ##    ## ##       ##     ## ##     ##  ##  ##    ## ##
+                  ##       ##       ##     ## ##     ##  ##  ##       ##
+  ####### #######  ######  ######   ########  ##     ##  ##  ##       ######   ####### #######
+                        ## ##       ##   ##    ##   ##   ##  ##       ##
+                  ##    ## ##       ##    ##    ## ##    ##  ##    ## ##
+                   ######  ######## ##     ##    ###    ####  ######  ########
 
 
 upCloud.service 'myData', ()->
@@ -50,13 +50,13 @@ upCloud.service 'myData', ()->
   return myDataStore
 
 
-                  ########  #### ########  ########  ######  ######## #### ##     ## ########                 
-                  ##     ##  ##  ##     ## ##       ##    ##    ##     ##  ##     ## ##                       
-                  ##     ##  ##  ##     ## ##       ##          ##     ##  ##     ## ##                       
-  ####### ####### ##     ##  ##  ########  ######   ##          ##     ##  ##     ## ######   ####### ####### 
-                  ##     ##  ##  ##   ##   ##       ##          ##     ##   ##   ##  ##                       
-                  ##     ##  ##  ##    ##  ##       ##    ##    ##     ##    ## ##   ##                       
-                  ########  #### ##     ## ########  ######     ##    ####    ###    ########                 
+                  ########  #### ########  ########  ######  ######## #### ##     ## ########
+                  ##     ##  ##  ##     ## ##       ##    ##    ##     ##  ##     ## ##
+                  ##     ##  ##  ##     ## ##       ##          ##     ##  ##     ## ##
+  ####### ####### ##     ##  ##  ########  ######   ##          ##     ##  ##     ## ######   ####### #######
+                  ##     ##  ##  ##   ##   ##       ##          ##     ##   ##   ##  ##
+                  ##     ##  ##  ##    ##  ##       ##    ##    ##     ##    ## ##   ##
+                  ########  #### ##     ## ########  ######     ##    ####    ###    ########
 
 Directives['filelistBind'] = ($http)->
   (scope, elm, attrs) ->
@@ -80,19 +80,19 @@ upCloud.directive Directives
 
 
 
-                   ######   #######  ##    ## ######## ########   #######  ##       ##       ######## ########                  
-                  ##    ## ##     ## ###   ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##                 
-                  ##       ##     ## ####  ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##                 
-  ####### ####### ##       ##     ## ## ## ##    ##    ########  ##     ## ##       ##       ######   ########  ####### ####### 
-                  ##       ##     ## ##  ####    ##    ##   ##   ##     ## ##       ##       ##       ##   ##                   
-                  ##    ## ##     ## ##   ###    ##    ##    ##  ##     ## ##       ##       ##       ##    ##                  
-                   ######   #######  ##    ##    ##    ##     ##  #######  ######## ######## ######## ##     ##                 
+                   ######   #######  ##    ## ######## ########   #######  ##       ##       ######## ########
+                  ##    ## ##     ## ###   ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##
+                  ##       ##     ## ####  ##    ##    ##     ## ##     ## ##       ##       ##       ##     ##
+  ####### ####### ##       ##     ## ## ## ##    ##    ########  ##     ## ##       ##       ######   ########  ####### #######
+                  ##       ##     ## ##  ####    ##    ##   ##   ##     ## ##       ##       ##       ##   ##
+                  ##    ## ##     ## ##   ###    ##    ##    ##  ##     ## ##       ##       ##       ##    ##
+                   ######   #######  ##    ##    ##    ##     ##  #######  ######## ######## ######## ##     ##
 
 isPic = (file)->
   link = file.uri or file.link or file.name
   if link.toLowerCase().split('.').pop() in ['jpg', 'png', 'gif', 'bmp', 'raw', 'jpeg', 'webp', 'ppm', 'pgm', 'pbm', 'pnm', 'pfm', 'pam', 'tiff', 'exif']
     return true
-  else 
+  else
     return false
 
 # 检查是否登录（看返回的user_id
@@ -167,7 +167,7 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
       $scope.pwdError = 'password does not match'
     else
       $scope.pwdWrong = false
-      
+
 
   $scope.submit = ()->
     goDashBoard = (user_id)->
@@ -198,13 +198,13 @@ Controllers['FormController'] = ($scope, $http, $location, myData)->
 
 
 
-  ########     ###     ######  ##     ## ########   #######     ###    ########  ########  
-  ##     ##   ## ##   ##    ## ##     ## ##     ## ##     ##   ## ##   ##     ## ##     ## 
-  ##     ##  ##   ##  ##       ##     ## ##     ## ##     ##  ##   ##  ##     ## ##     ## 
-  ##     ## ##     ##  ######  ######### ########  ##     ## ##     ## ########  ##     ## 
-  ##     ## #########       ## ##     ## ##     ## ##     ## ######### ##   ##   ##     ## 
-  ##     ## ##     ## ##    ## ##     ## ##     ## ##     ## ##     ## ##    ##  ##     ## 
-  ########  ##     ##  ######  ##     ## ########   #######  ##     ## ##     ## ########  
+  ########     ###     ######  ##     ## ########   #######     ###    ########  ########
+  ##     ##   ## ##   ##    ## ##     ## ##     ## ##     ##   ## ##   ##     ## ##     ##
+  ##     ##  ##   ##  ##       ##     ## ##     ## ##     ##  ##   ##  ##     ## ##     ##
+  ##     ## ##     ##  ######  ######### ########  ##     ## ##     ## ########  ##     ##
+  ##     ## #########       ## ##     ## ##     ## ##     ## ######### ##   ##   ##     ##
+  ##     ## ##     ## ##    ## ##     ## ##     ## ##     ## ##     ## ##    ##  ##     ##
+  ########  ##     ##  ######  ##     ## ########   #######  ##     ## ##     ## ########
 
 Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routeParams)->
 
@@ -346,7 +346,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         setIcon(file)
         file.created_at = getTime(file.created_at)
         file.updated_at = getTime(file.updated_at)
-        if type is 'normal' 
+        if type is 'normal'
           content.push file if file.status isnt 'trashed'
         else
           content.push file
@@ -371,13 +371,13 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       getTrashedContent()
 
 
-    ########  ########     ###     ######        ####       ########  ########   #######  ########  
-    ##     ## ##     ##   ## ##   ##    ##      ##  ##      ##     ## ##     ## ##     ## ##     ## 
-    ##     ## ##     ##  ##   ##  ##             ####       ##     ## ##     ## ##     ## ##     ## 
-    ##     ## ########  ##     ## ##   ####     ####        ##     ## ########  ##     ## ########  
-    ##     ## ##   ##   ######### ##    ##     ##  ## ##    ##     ## ##   ##   ##     ## ##        
-    ##     ## ##    ##  ##     ## ##    ##     ##   ##      ##     ## ##    ##  ##     ## ##        
-    ########  ##     ## ##     ##  ######       ####  ##    ########  ##     ##  #######  ##        
+    ########  ########     ###     ######        ####       ########  ########   #######  ########
+    ##     ## ##     ##   ## ##   ##    ##      ##  ##      ##     ## ##     ## ##     ## ##     ##
+    ##     ## ##     ##  ##   ##  ##             ####       ##     ## ##     ## ##     ## ##     ##
+    ##     ## ########  ##     ## ##   ####     ####        ##     ## ########  ##     ## ########
+    ##     ## ##   ##   ######### ##    ##     ##  ## ##    ##     ## ##   ##   ##     ## ##
+    ##     ## ##    ##  ##     ## ##    ##     ##   ##      ##     ## ##    ##  ##     ## ##
+    ########  ##     ## ##     ##  ######       ####  ##    ########  ##     ##  #######  ##
     # 可参考资料: http://www.webappers.com/2011/09/28/drag-drop-file-upload-with-html5-javascript/
 
   dragEnterLeave = (evt) ->
@@ -413,7 +413,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         console.log 'no file was uploading~'
         autoUpload = true
         scope.files = []
-      else 
+      else
         console.log 'okay... just insert into the list'
         autoUpload = false
 
@@ -428,14 +428,14 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
 
 
-          #### ######## ######## ##     ##    ########  ########   #######  ########  
-           ##     ##    ##       ###   ###    ##     ## ##     ## ##     ## ##     ## 
-           ##     ##    ##       #### ####    ##     ## ##     ## ##     ## ##     ## 
-           ##     ##    ######   ## ### ##    ##     ## ########  ##     ## ########  
-           ##     ##    ##       ##     ##    ##     ## ##   ##   ##     ## ##        
-           ##     ##    ##       ##     ##    ##     ## ##    ##  ##     ## ##        
-          ####    ##    ######## ##     ##    ########  ##     ##  #######  ##        
-  
+          #### ######## ######## ##     ##    ########  ########   #######  ########
+           ##     ##    ##       ###   ###    ##     ## ##     ## ##     ## ##     ##
+           ##     ##    ##       #### ####    ##     ## ##     ## ##     ## ##     ##
+           ##     ##    ######   ## ### ##    ##     ## ########  ##     ## ########
+           ##     ##    ##       ##     ##    ##     ## ##   ##   ##     ## ##
+           ##     ##    ##       ##     ##    ##     ## ##    ##  ##     ## ##
+          ####    ##    ######## ##     ##    ########  ##     ##  #######  ##
+
   # 会发多次请求，需要debug
 
 
@@ -444,11 +444,11 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     # 如果是群组，那就要改group_parent_directory_id
     # 非群组，就该parent_directory_id
     if $routeParams.group_id
-      put_data = 
+      put_data =
         new_group_parent_dir_id: new_parent_dir_id
     else
       # 非群组的
-      put_data = 
+      put_data =
         new_parent_dir_id: new_parent_dir_id
     api_point = baseURL+'/api/'+item.item_type+'s/'+item.item_id
     $http.put(api_point, put_data)
@@ -471,12 +471,12 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     # 如果丢到了IMG上，那就要上层的
     # small上，就上层的子层...
     # div上，子曾
-    switch dropped.tagName 
+    switch dropped.tagName
       when 'IMG'   then dropped_item = dropped.parentNode.dataset
       when 'A'     then dropped_item = dropped.dataset
       when 'SMALL' then dropped_item = dropped.parentNode.children[1].dataset
       when 'DIV'   then dropped_item = dropped.children[1].dataset
-    
+
     # console.log dropped_item.item_id
     # console.log dropped_item.item_type
 
@@ -502,7 +502,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   itemDrag = (evt)->
     theItem = $(this).children()[1]
-    iteminfo = 
+    iteminfo =
       item_id: theItem.dataset.item_id
       item_type: theItem.dataset.item_type
     evt.originalEvent.dataTransfer.setData('text', JSON.stringify(iteminfo))
@@ -529,7 +529,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   droppableItem   = $(".item")
   droppableButton = $(".droppableButton")
   trashButton     = $(".trashButton")
-  
+
   droppableItem.live('dragover', testOver)
   droppableItem.live('drop', testDrop)
   droppableItem.live('dragstart', itemDrag)
@@ -580,19 +580,19 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   # 每次有文件传完了就会出发load事件
   # 在事件里再重新触发上传操作，实现队列
   # 当前队列位置可以存在myData里面
-  
-    ##     ## ########  ##        #######     ###    ########  
-    ##     ## ##     ## ##       ##     ##   ## ##   ##     ## 
-    ##     ## ##     ## ##       ##     ##  ##   ##  ##     ## 
-    ##     ## ########  ##       ##     ## ##     ## ##     ## 
-    ##     ## ##        ##       ##     ## ######### ##     ## 
-    ##     ## ##        ##       ##     ## ##     ## ##     ## 
-     #######  ##        ########  #######  ##     ## ########  
+
+    ##     ## ########  ##        #######     ###    ########
+    ##     ## ##     ## ##       ##     ##   ## ##   ##     ##
+    ##     ## ##     ## ##       ##     ##  ##   ##  ##     ##
+    ##     ## ########  ##       ##     ## ##     ## ##     ##
+    ##     ## ##        ##       ##     ## ######### ##     ##
+    ##     ## ##        ##       ##     ## ##     ## ##     ##
+     #######  ##        ########  #######  ##     ## ########
 
 
   dropbox = document.getElementById("dropbox")
-  
-  
+
+
   dropbox.addEventListener "dragenter", dragEnterLeave, false
   dropbox.addEventListener "dragleave", dragEnterLeave, false
   dropbox.addEventListener "dragover", dragOver, false
@@ -600,8 +600,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
     # item.addEventListener "dragenter", dragEnterLeave, false
     # item.addEventListener "dragleave", dragEnterLeave, false
-  
-  
+
+
 
   scope.setFiles = (element) ->
     if element.files.length > 0
@@ -611,7 +611,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         console.log 'no file was uploading~'
         autoUpload = true
         scope.files = []
-      else 
+      else
         # 已经有文件在scope.files里了，那就说明已经在进行上传了，那就不用触发上传动作
         console.log 'okay... just insert into the list'
         autoUpload = false
@@ -630,7 +630,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     nextFile = scope.files[0]
     console.log 'uploading '+nextFile.name
     ((file)->
-      post_data = 
+      post_data =
         file_name: file.name
       if $routeParams.group_id
         post_data.group_id = $routeParams.group_id
@@ -684,11 +684,11 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     #       xhr.send fd
     #     .error (err)->
     #       console.log err)(file)
-      
+
   uploadComplete = (evt) ->
     console.log "File: "+scope.files[0].name+' is uploaded.'
     console.log evt.target.response
-    # 告诉服务器，已经上传完毕 
+    # 告诉服务器，已经上传完毕
     # （客户端的同步通知=.=）
     console.log 'gonna tell the server!!!!'
     $http.post(baseURL+'/api/files/done', evt.target.response)
@@ -709,9 +709,9 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
         , delay
     .error (err)->
       console.log err
-      
 
-    # scope.current_dir_content.push 
+
+    # scope.current_dir_content.push
 
 
   # Turn the FileList object into an Array
@@ -731,13 +731,13 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       scope.progressVisible = false
     alert "The upload has been canceled by the user or the browser dropped the connection."
 
-     ######  ########  ########    ###    ######## ######## 
-    ##    ## ##     ## ##         ## ##      ##    ##       
-    ##       ##     ## ##        ##   ##     ##    ##       
-    ##       ########  ######   ##     ##    ##    ######   
-    ##       ##   ##   ##       #########    ##    ##       
-    ##    ## ##    ##  ##       ##     ##    ##    ##       
-     ######  ##     ## ######## ##     ##    ##    ######## 
+     ######  ########  ########    ###    ######## ########
+    ##    ## ##     ## ##         ## ##      ##    ##
+    ##       ##     ## ##        ##   ##     ##    ##
+    ##       ########  ######   ##     ##    ##    ######
+    ##       ##   ##   ##       #########    ##    ##
+    ##    ## ##    ##  ##       ##     ##    ##    ##
+     ######  ##     ## ######## ##     ##    ##    ########
 
   # 创建文件夹
   scope.createDir = ()->
@@ -745,8 +745,8 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
     dir_id = $routeParams.dir_id or 0
     name   = $scope.new_dir_name
     $scope.new_dir_name = ''
-    
-    post_data = 
+
+    post_data =
       name: name
 
     if $routeParams.group_id
@@ -808,7 +808,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
   scope.showDeleteItemModal = (item)->
     scope.itemInfo = item
     $('#DeleteItemModal').foundation('reveal', 'open')
-  
+
 
   # 修改文件/文件夹
   scope.itemChange = (item_type, item_id, new_forename, extension)->
@@ -867,7 +867,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       console.log err
 
   scope.editGroup = (group)->
-    
+
   scope.deleteGroup = (group_id)->
     if confirm('sure!?')
       api_point = baseURL+'/api/groups/'+group_id
@@ -948,7 +948,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       , (err)->
         console.log err
         errorHandler err
-    else 
+    else
       ar[action] = email
       goChange(ar)
       .then (result)->
@@ -1008,7 +1008,7 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
 
   scope.showEditUserModal = (user)->
     console.log user
-    scope.userInfo = 
+    scope.userInfo =
       id   : myData.user_id
       email: myData.user_email
     $('#UserEditModal').foundation('reveal', 'open')
@@ -1024,13 +1024,13 @@ Controllers['DashBoardController'] = ($scope, $http, $location, myData, $routePa
       console.log err
       alert err.message
 
-  ######## #### ##       ######## 
-  ##        ##  ##       ##       
-  ##        ##  ##       ##       
-  ######    ##  ##       ######   
-  ##        ##  ##       ##       
-  ##        ##  ##       ##       
-  ##       #### ######## ######## 
+  ######## #### ##       ########
+  ##        ##  ##       ##
+  ##        ##  ##       ##
+  ######    ##  ##       ######
+  ##        ##  ##       ##
+  ##        ##  ##       ##
+  ##       #### ######## ########
 
 
 
@@ -1038,7 +1038,7 @@ Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
   file_id = $routeParams.file_id
   $http.get(baseURL+'/api/files/'+file_id+'/link')
   .success (file)->
-    $scope.file_link = file.link
+    $scope.file_link = "#{file.link}?_upd=#{file.name}"
     $scope.file_name = file.name
     if isPic(file)
       $scope.isPic = true
@@ -1054,13 +1054,13 @@ Controllers['FileController'] = ($http, $scope, $routeParams, myData)->
 
 upCloud.controller Controllers
 
-  ########   #######  ##     ## ######## ######## 
-  ##     ## ##     ## ##     ##    ##    ##       
-  ##     ## ##     ## ##     ##    ##    ##       
-  ########  ##     ## ##     ##    ##    ######   
-  ##   ##   ##     ## ##     ##    ##    ##       
-  ##    ##  ##     ## ##     ##    ##    ##       
-  ##     ##  #######   #######     ##    ######## 
+  ########   #######  ##     ## ######## ########
+  ##     ## ##     ## ##     ##    ##    ##
+  ##     ## ##     ## ##     ##    ##    ##
+  ########  ##     ## ##     ##    ##    ######
+  ##   ##   ##     ## ##     ##    ##    ##
+  ##    ##  ##     ## ##     ##    ##    ##
+  ##     ##  #######   #######     ##    ########
 
 upCloud.config ($routeProvider, $locationProvider)->
   $locationProvider.html5Mode true
@@ -1085,16 +1085,16 @@ upCloud.config ($routeProvider, $locationProvider)->
   .when testURL,
     templateUrl: tempURL+'/test.partial'
 
-  .otherwise 
+  .otherwise
     redirectTo: tempURL+'/home'
 
 
 
 
-  ######## ##    ## ########  
-  ##       ###   ## ##     ## 
-  ##       ####  ## ##     ## 
-  ######   ## ## ## ##     ## 
-  ##       ##  #### ##     ## 
-  ##       ##   ### ##     ## 
-  ######## ##    ## ########  
+  ######## ##    ## ########
+  ##       ###   ## ##     ##
+  ##       ####  ## ##     ##
+  ######   ## ## ## ##     ##
+  ##       ##  #### ##     ##
+  ##       ##   ### ##     ##
+  ######## ##    ## ########
